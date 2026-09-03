@@ -1,1 +1,3 @@
-
+const CONFIG = {
+  GAS_URL: 'GANTI_DENGAN_URL_WEB_APP_ANDA'
+};
