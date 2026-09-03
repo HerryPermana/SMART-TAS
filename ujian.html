@@ -12,6 +12,7 @@
     .form-check-input:checked { background-color: #198754; border-color: #198754; }
     .badge-pelanggaran { font-size: 0.85rem; }
     .sticky-header { position: sticky; top: 10px; z-index: 1020; }
+    .table-kategori td, .table-kategori th { vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -65,7 +66,6 @@
   </div>
 </div>
 
-<!-- Dependencies -->
 <script src="js/config.js"></script>
 <script src="js/auth-nav.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -73,6 +73,7 @@
 <script>
   let jumlahPelanggaran = 0;
   let mapelTerpilih = '';
+  let listSoalLoaded = []; // Menyimpan data soal aktif
   const session = JSON.parse(localStorage.getItem('userSession'));
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -82,7 +83,7 @@
     loadDaftarMapel();
   });
 
-  // 1. Ambil Daftar Mapel dari Sheet
+  // 1. Ambil Daftar Mapel
   function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     fetch(CONFIG.GAS_URL, {
@@ -105,7 +106,7 @@
     });
   }
 
-  // 2. Deteksi Kecurangan (Anti-Cheat)
+  // 2. Anti-Cheat (Pindah Tab)
   document.addEventListener("visibilitychange", function() {
     if (document.hidden && document.getElementById('boxSoal').style.display !== 'none') {
       jumlahPelanggaran++;
@@ -114,7 +115,7 @@
     }
   });
 
-  // 3. Fungsi Mulai Ujian & Fullscreen
+  // 3. Mulai Ujian
   function mulaiUjian() {
     const select = document.getElementById('selectMapel');
     mapelTerpilih = select.value;
@@ -136,7 +137,7 @@
     loadSoal(mapelTerpilih);
   }
 
-  // 4. Render Soal Dinamis
+  // 4. Render Soal Berdasarkan Tipe
   function loadSoal(idMapel) {
     const container = document.getElementById('containerSoal');
     container.innerHTML = `
@@ -152,21 +153,66 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success' && data.soal && data.soal.length > 0) {
+        listSoalLoaded = data.soal;
         container.innerHTML = '';
+        
         data.soal.forEach((s, idx) => {
-          let htmlOpsi = '';
-          const isMultipleChoice = s.tipe === 'PGK_MCMA';
-          const inputType = isMultipleChoice ? 'checkbox' : 'radio';
+          let htmlKonten = '';
+          const tipe = s.tipe || 'PG_SEDERHANA';
 
-          if (Array.isArray(s.opsi)) {
+          // Tipe 1: PG SEDERHANA (Single Choice)
+          if (tipe === 'PG_SEDERHANA') {
             s.opsi.forEach((o, oIdx) => {
               const inputId = `opt_${s.idSoal}_${oIdx}`;
-              htmlOpsi += `
+              htmlKonten += `
                 <div class="form-check p-2 rounded border mb-2 bg-light">
-                  <input class="form-check-input ms-1" type="${inputType}" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
+                  <input class="form-check-input ms-1" type="radio" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
                   <label class="form-check-label w-100 ms-2" for="${inputId}">${o}</label>
                 </div>`;
             });
+          }
+          // Tipe 2: PGK MCMA (Multiple Choice Multiple Answers)
+          else if (tipe === 'PGK_MCMA') {
+            htmlKonten += `<div class="text-muted small mb-2"><i>(Pilih satu atau lebih jawaban yang benar)</i></div>`;
+            s.opsi.forEach((o, oIdx) => {
+              const inputId = `opt_${s.idSoal}_${oIdx}`;
+              htmlKonten += `
+                <div class="form-check p-2 rounded border mb-2 bg-light">
+                  <input class="form-check-input ms-1" type="checkbox" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
+                  <label class="form-check-label w-100 ms-2" for="${inputId}">${o}</label>
+                </div>`;
+            });
+          }
+          // Tipe 3: PGK KATEGORI (Tabel Pernyataan Benar / Salah)
+          else if (tipe === 'PGK_KATEGORI') {
+            htmlKonten += `
+              <div class="text-muted small mb-2"><i>(Tentukan respon Benar/Salah untuk setiap pernyataan di bawah)</i></div>
+              <div class="table-responsive">
+                <table class="table table-bordered table-kategori mt-2">
+                  <thead class="table-secondary text-center">
+                    <tr>
+                      <th>Pernyataan / Respon</th>
+                      <th style="width: 100px;">Benar</th>
+                      <th style="width: 100px;">Salah</th>
+                    </tr>
+                  </thead>
+                  <tbody>`;
+            
+            s.opsi.forEach((o, oIdx) => {
+              const nameGroup = `kategori_${s.idSoal}_${oIdx}`;
+              htmlKonten += `
+                <tr>
+                  <td>${o}</td>
+                  <td class="text-center">
+                    <input class="form-check-input" type="radio" name="${nameGroup}" data-item="${o}" value="Benar">
+                  </td>
+                  <td class="text-center">
+                    <input class="form-check-input" type="radio" name="${nameGroup}" data-item="${o}" value="Salah">
+                  </td>
+                </tr>`;
+            });
+
+            htmlKonten += `</tbody></table></div>`;
           }
 
           container.innerHTML += `
@@ -175,26 +221,20 @@
                 <span class="badge bg-success fs-6">${idx + 1}</span>
                 <div class="fw-bold fs-5 text-dark">${s.pertanyaan}</div>
               </div>
-              <div class="opsi-container">${htmlOpsi}</div>
+              <div class="opsi-container">${htmlKonten}</div>
             </div>`;
         });
       } else {
-        container.innerHTML = `
-          <div class="card card-soal p-4 text-center text-muted">
-            Belum ada soal yang tersedia untuk mata pelajaran ini.
-          </div>`;
+        container.innerHTML = `<div class="card card-soal p-4 text-center text-muted">Belum ada soal yang tersedia untuk mata pelajaran ini.</div>`;
         document.getElementById('btnSubmit').style.display = 'none';
       }
     })
     .catch(() => {
-      container.innerHTML = `
-        <div class="card card-soal p-4 text-center text-danger">
-          Gagal memuat soal. Periksa koneksi internet Anda.
-        </div>`;
+      container.innerHTML = `<div class="card card-soal p-4 text-center text-danger">Gagal memuat soal. Periksa koneksi internet Anda.</div>`;
     });
   }
 
-  // 5. Kirim Jawaban
+  // 5. Submit & Packaging Jawaban
   function submitJawaban() {
     if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian ini?")) return;
 
@@ -203,21 +243,35 @@
     btnSubmit.innerText = 'Mengirim Jawaban...';
 
     const listJawaban = [];
-    const processedSoal = new Set();
 
-    document.querySelectorAll('[name^="soal_"]').forEach(input => {
-      const idSoal = input.name.replace('soal_', '');
-      
-      if (!processedSoal.has(idSoal)) {
-        const inputs = document.querySelectorAll(`[name="soal_${idSoal}"]`);
-        if (inputs[0].type === 'checkbox') {
-          const selectedValues = Array.from(inputs).filter(i => i.checked).map(i => i.value);
-          listJawaban.push({ idSoal: idSoal, jawaban: selectedValues });
-        } else {
-          const checkedInput = Array.from(inputs).find(i => i.checked);
-          listJawaban.push({ idSoal: idSoal, jawaban: checkedInput ? checkedInput.value : '' });
-        }
-        processedSoal.add(idSoal);
+    listSoalLoaded.forEach(s => {
+      const tipe = s.tipe || 'PG_SEDERHANA';
+
+      if (tipe === 'PG_SEDERHANA') {
+        const checked = document.querySelector(`[name="soal_${s.idSoal}"]:checked`);
+        listJawaban.push({
+          idSoal: s.idSoal,
+          jawaban: checked ? checked.value : ''
+        });
+      } 
+      else if (tipe === 'PGK_MCMA') {
+        const checkboxes = document.querySelectorAll(`[name="soal_${s.idSoal}"]:checked`);
+        const ansArr = Array.from(checkboxes).map(c => c.value);
+        listJawaban.push({
+          idSoal: s.idSoal,
+          jawaban: ansArr
+        });
+      } 
+      else if (tipe === 'PGK_KATEGORI') {
+        const katResult = {};
+        s.opsi.forEach((o, oIdx) => {
+          const checkedKat = document.querySelector(`[name="kategori_${s.idSoal}_${oIdx}"]:checked`);
+          katResult[o] = checkedKat ? checkedKat.value : '';
+        });
+        listJawaban.push({
+          idSoal: s.idSoal,
+          jawaban: katResult
+        });
       }
     });
 
