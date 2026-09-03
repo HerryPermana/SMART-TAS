@@ -8,9 +8,22 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
     body { background: #f4f6f9; }
     .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; margin-bottom: 30px; }
     .card-menu { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; text-decoration: none; color: #333; font-weight: bold; border-left: 5px solid #198754; transition: transform 0.2s; }
     .card-menu:hover { transform: translateY(-3px); }
+
+    /* Gaya Daftar Tugas */
+    .section-title { margin-bottom: 15px; color: #333; font-size: 18px; }
+    .tugas-list { display: flex; flex-direction: column; gap: 15px; }
+    .tugas-item { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid #0d6efd; }
+    .tugas-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .tugas-judul { font-size: 16px; font-weight: bold; color: #222; }
+    .tugas-mapel { background: #e7f1ff; color: #0d6efd; font-size: 12px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
+    .tugas-deskripsi { color: #555; font-size: 14px; margin-bottom: 12px; line-height: 1.4; white-space: pre-line; }
+    .tugas-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #666; flex-wrap: wrap; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+    .btn-link { background: #198754; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 12px; display: inline-block; }
+    .btn-link:hover { background: #146c43; }
+    .empty-state { background: #fff; padding: 20px; text-align: center; color: #777; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
   </style>
 </head>
 <body>
@@ -20,9 +33,61 @@
   <div class="grid">
     <a href="ujian.html" class="card-menu">✍️ Masuk Ujian</a>
   </div>
+
+  <h3 class="section-title">📚 Daftar Tugas &amp; Materi</h3>
+  <div id="containerTugas" class="tugas-list">
+    <div class="empty-state">Memuat daftar tugas...</div>
+  </div>
 </div>
 
 <script src="js/config.js"></script>
 <script src="js/auth-nav.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    loadTugas();
+  });
+
+  function loadTugas() {
+    const container = document.getElementById('containerTugas');
+
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getTugas' })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success' && data.tugas && data.tugas.length > 0) {
+        container.innerHTML = '';
+        data.tugas.forEach(item => {
+          const hasLink = item.linkMateri && item.linkMateri !== '-' && item.linkMateri.trim().startsWith('http');
+          
+          const linkHtml = hasLink 
+            ? `<a href="${item.linkMateri}" target="_blank" rel="noopener noreferrer" class="btn-link">🔗 Buka Link / Materi</a>` 
+            : `<span style="font-style: italic; color: #999; font-size: 12px;">Tidak ada lampiran link</span>`;
+
+          container.innerHTML += `
+            <div class="tugas-item">
+              <div class="tugas-header">
+                <div class="tugas-judul">${item.judul}</div>
+                <span class="tugas-mapel">${item.idMapel}</span>
+              </div>
+              <div class="tugas-deskripsi">${item.deskripsi}</div>
+              <div class="tugas-footer">
+                <span>⏰ Deadline: <b>${item.deadline}</b></span>
+                ${linkHtml}
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        container.innerHTML = '<div class="empty-state">Belum ada tugas atau materi saat ini.</div>';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = '<div class="empty-state" style="color:#dc3545;">Gagal memuat daftar tugas. Pastikan koneksi dan URL Apps Script benar.</div>';
+    });
+  }
+</script>
 </body>
 </html>
