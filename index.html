@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - KTSM8</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 380px; }
+    h2 { text-align: center; margin-bottom: 20px; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #555; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    button { width: 100%; padding: 11px; background: #0d6efd; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    button:disabled { background: #a5c7fe; }
+    .alert { padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 13px; display: none; }
+    .alert-danger { background: #f8d7da; color: #842029; }
+  </style>
+</head>
+<body>
 
+<div class="card">
+  <h2>Portal Login</h2>
+  <div id="alertBox" class="alert alert-danger"></div>
+  <form id="formLogin">
+    <div class="form-group">
+      <label>ID / Username</label>
+      <input type="text" id="username" placeholder="Masukkan ID" required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Masukkan Password" required>
+    </div>
+    <button type="submit" id="btnLogin">Masuk</button>
+  </form>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+  document.getElementById('formLogin').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnLogin');
+    const alertBox = document.getElementById('alertBox');
+    
+    btn.disabled = true;
+    btn.innerText = 'Memeriksa...';
+    alertBox.style.display = 'none';
+
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'login',
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value.trim()
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        localStorage.setItem('userSession', JSON.stringify(data.user));
+        if (data.user.role === 'guru') {
+          window.location.href = 'dashboard-guru.html';
+        } else {
+          window.location.href = 'dashboard-siswa.html';
+        }
+      } else {
+        alertBox.innerText = data.message;
+        alertBox.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      alertBox.innerText = 'Koneksi gagal!';
+      alertBox.style.display = 'block';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerText = 'Masuk';
+    });
+  });
+</script>
+</body>
+</html>
