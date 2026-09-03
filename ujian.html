@@ -4,65 +4,146 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ruang Ujian - KTSM8</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f4f6f9; }
-    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
-    .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .soal-box { margin-bottom: 15px; }
-    .opsi-box { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-    button { padding: 10px 20px; background: #198754; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    body { background-color: #f4f6f9; }
+    .card-soal { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .form-check-input:checked { background-color: #198754; border-color: #198754; }
+    .badge-pelanggaran { font-size: 0.85rem; }
+    .sticky-header { position: sticky; top: 10px; z-index: 1020; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="card" id="boxMulai">
-    <h2>Ruang Ujian</h2><br>
-    <p>Klik tombol di bawah untuk memulai ujian dalam mode layar penuh.</p><br>
-    <button onclick="mulaiUjian()">Mulai Ujian Now</button>
+<div class="container py-4">
+  <!-- BOX PILIH MAPEL & MULAI -->
+  <div id="boxMulai" class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card card-soal p-4 text-center">
+        <h3 class="fw-bold mb-3">Ruang Ujian</h3>
+        <p class="text-muted">Pilih mata pelajaran dan tekan tombol di bawah untuk memulai ujian dalam mode layar penuh.</p>
+        
+        <div class="mb-3 text-start">
+          <label for="selectMapel" class="form-label fw-bold">Mata Pelajaran</label>
+          <select id="selectMapel" class="form-select form-select-lg">
+            <option value="">-- Memuat Mata Pelajaran --</option>
+          </select>
+        </div>
+
+        <div class="alert alert-warning text-start" role="alert">
+          <small><b>⚠️ Aturan Ujian:</b> Dilarang berpindah tab, membuka aplikasi lain, atau keluar dari mode layar penuh selama ujian berlangsung.</small>
+        </div>
+
+        <button onclick="mulaiUjian()" id="btnMulai" class="btn btn-success btn-lg w-100 fw-bold">🚀 Mulai Ujian Sekarang</button>
+      </div>
+    </div>
   </div>
 
+  <!-- BOX AREA SOAL UJIAN -->
   <div id="boxSoal" style="display:none;">
-    <div class="card">
-      <h3 id="judulMapel">Ujian Berlangsung</h3>
-      <p style="color:red; font-size:12px; margin-top:5px;">Dilarang berpindah tab atau meninggalkan layar!</p>
+    <!-- Sticky Status Bar -->
+    <div class="card card-soal p-3 mb-4 sticky-header bg-white border-start border-4 border-success">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h5 id="judulMapel" class="fw-bold mb-0">Ujian Berlangsung</h5>
+          <small class="text-muted">Siswa: <b id="namaSiswa">-</b></small>
+        </div>
+        <div>
+          <span class="badge bg-danger badge-pelanggaran" id="badgePelanggaran">Pelanggaran: 0x</span>
+        </div>
+      </div>
     </div>
-    
-    <div id="containerSoal"></div>
-    
-    <button onclick="submitJawaban()" id="btnSubmit">Kirim Jawaban</button>
+
+    <!-- Container Daftar Soal -->
+    <div id="containerSoal" class="mb-4"></div>
+
+    <!-- Tombol Submit -->
+    <div class="card card-soal p-3 text-end">
+      <button onclick="submitJawaban()" id="btnSubmit" class="btn btn-primary btn-lg px-5 fw-bold">📤 Kirim Jawaban</button>
+    </div>
   </div>
 </div>
 
+<!-- Dependencies -->
 <script src="js/config.js"></script>
 <script src="js/auth-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
   let jumlahPelanggaran = 0;
+  let mapelTerpilih = '';
   const session = JSON.parse(localStorage.getItem('userSession'));
 
-  // Deteksi Kecurangan (Pindah Tab)
+  document.addEventListener("DOMContentLoaded", function() {
+    if (session) {
+      document.getElementById('namaSiswa').innerText = session.nama;
+    }
+    loadDaftarMapel();
+  });
+
+  // 1. Ambil Daftar Mapel dari Sheet
+  function loadDaftarMapel() {
+    const select = document.getElementById('selectMapel');
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getMapel' })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
+        select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+        data.mapel.forEach(m => {
+          select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel})</option>`;
+        });
+      } else {
+        select.innerHTML = '<option value="">Tidak ada mata pelajaran tersedia</option>';
+      }
+    })
+    .catch(() => {
+      select.innerHTML = '<option value="">Gagal memuat mata pelajaran</option>';
+    });
+  }
+
+  // 2. Deteksi Kecurangan (Anti-Cheat)
   document.addEventListener("visibilitychange", function() {
     if (document.hidden && document.getElementById('boxSoal').style.display !== 'none') {
       jumlahPelanggaran++;
-      alert(`PERINGATAN! Terdeteksi meninggalkan layar ujian (${jumlahPelanggaran}x). Catatan ini akan dikirim ke guru.`);
+      document.getElementById('badgePelanggaran').innerText = `Pelanggaran: ${jumlahPelanggaran}x`;
+      alert(`PERINGATAN! Terdeteksi meninggalkan layar ujian (${jumlahPelanggaran}x).\nCatatan ini akan dikirim ke sistem.`);
     }
   });
 
+  // 3. Fungsi Mulai Ujian & Fullscreen
   function mulaiUjian() {
+    const select = document.getElementById('selectMapel');
+    mapelTerpilih = select.value;
+
+    if (!mapelTerpilih) {
+      alert("Silakan pilih Mata Pelajaran terlebih dahulu!");
+      return;
+    }
+
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen().catch(() => {});
     }
+
+    const selectedText = select.options[select.selectedIndex].text;
+    document.getElementById('judulMapel').innerText = selectedText;
     document.getElementById('boxMulai').style.display = 'none';
     document.getElementById('boxSoal').style.display = 'block';
-    
-    // Contoh load soal statis/dinamis dari GAS
-    loadSoal('MP001');
+
+    loadSoal(mapelTerpilih);
   }
 
+  // 4. Render Soal Dinamis
   function loadSoal(idMapel) {
     const container = document.getElementById('containerSoal');
-    container.innerHTML = 'Memuat soal...';
+    container.innerHTML = `
+      <div class="card card-soal p-4 text-center">
+        <div class="spinner-border text-success mx-auto mb-2" role="status"></div>
+        <span>Memuat soal ujian...</span>
+      </div>`;
 
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
@@ -70,39 +151,73 @@
     })
     .then(res => res.json())
     .then(data => {
-      if (data.status === 'success' && data.soal.length > 0) {
+      if (data.status === 'success' && data.soal && data.soal.length > 0) {
         container.innerHTML = '';
         data.soal.forEach((s, idx) => {
           let htmlOpsi = '';
-          s.opsi.forEach(o => {
-            htmlOpsi += `
-              <label><input type="radio" name="soal_${s.idSoal}" value="${o}"> ${o}</label>
-            `;
-          });
+          const isMultipleChoice = s.tipe === 'PGK_MCMA';
+          const inputType = isMultipleChoice ? 'checkbox' : 'radio';
+
+          if (Array.isArray(s.opsi)) {
+            s.opsi.forEach((o, oIdx) => {
+              const inputId = `opt_${s.idSoal}_${oIdx}`;
+              htmlOpsi += `
+                <div class="form-check p-2 rounded border mb-2 bg-light">
+                  <input class="form-check-input ms-1" type="${inputType}" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
+                  <label class="form-check-label w-100 ms-2" for="${inputId}">${o}</label>
+                </div>`;
+            });
+          }
 
           container.innerHTML += `
-            <div class="card soal-box">
-              <p><b>${idx + 1}. ${s.pertanyaan}</b></p>
-              <div class="opsi-box">${htmlOpsi}</div>
+            <div class="card card-soal p-4 mb-3">
+              <div class="d-flex align-items-start gap-2 mb-3">
+                <span class="badge bg-success fs-6">${idx + 1}</span>
+                <div class="fw-bold fs-5 text-dark">${s.pertanyaan}</div>
+              </div>
+              <div class="opsi-container">${htmlOpsi}</div>
             </div>`;
         });
       } else {
-        container.innerHTML = '<div class="card">Belum ada soal untuk mata pelajaran ini.</div>';
+        container.innerHTML = `
+          <div class="card card-soal p-4 text-center text-muted">
+            Belum ada soal yang tersedia untuk mata pelajaran ini.
+          </div>`;
+        document.getElementById('btnSubmit').style.display = 'none';
       }
+    })
+    .catch(() => {
+      container.innerHTML = `
+        <div class="card card-soal p-4 text-center text-danger">
+          Gagal memuat soal. Periksa koneksi internet Anda.
+        </div>`;
     });
   }
 
+  // 5. Kirim Jawaban
   function submitJawaban() {
-    if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian?")) return;
+    if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian ini?")) return;
 
-    // Kumpulkan jawaban
+    const btnSubmit = document.getElementById('btnSubmit');
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = 'Mengirim Jawaban...';
+
     const listJawaban = [];
+    const processedSoal = new Set();
+
     document.querySelectorAll('[name^="soal_"]').forEach(input => {
-      if (input.checked) {
-        listJawaban.push({
-          idSoal: input.name.replace('soal_', ''),
-          jawaban: input.value
-        });
+      const idSoal = input.name.replace('soal_', '');
+      
+      if (!processedSoal.has(idSoal)) {
+        const inputs = document.querySelectorAll(`[name="soal_${idSoal}"]`);
+        if (inputs[0].type === 'checkbox') {
+          const selectedValues = Array.from(inputs).filter(i => i.checked).map(i => i.value);
+          listJawaban.push({ idSoal: idSoal, jawaban: selectedValues });
+        } else {
+          const checkedInput = Array.from(inputs).find(i => i.checked);
+          listJawaban.push({ idSoal: idSoal, jawaban: checkedInput ? checkedInput.value : '' });
+        }
+        processedSoal.add(idSoal);
       }
     });
 
@@ -110,8 +225,8 @@
       method: 'POST',
       body: JSON.stringify({
         action: 'submitUjian',
-        idSiswa: session.id,
-        idMapel: 'MP001',
+        idSiswa: session ? session.id : 'ANON',
+        idMapel: mapelTerpilih,
         jawaban: listJawaban,
         pelanggaran: jumlahPelanggaran
       })
@@ -119,11 +234,19 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        alert(`Ujian Selesai! Nilai Anda: ${data.nilai}`);
-        window.location.href = 'dashboard-siswa.html';
+        alert(`Ujian Selesai!\nNilai Anda: ${data.nilai}`);
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        window.location.href = session && session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
       } else {
-        alert('Gagal mengirim: ' + data.message);
+        alert('Gagal mengirim jawaban: ' + data.message);
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = '📤 Kirim Jawaban';
       }
+    })
+    .catch(() => {
+      alert('Terjadi kesalahan koneksi saat mengirim jawaban.');
+      btnSubmit.disabled = false;
+      btnSubmit.innerText = '📤 Kirim Jawaban';
     });
   }
 </script>
