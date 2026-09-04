@@ -4,106 +4,169 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tambah Tugas - KTSM8</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f4f6f9; }
-    .card { background: #fff; padding: 25px; border-radius: 8px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
-    textarea { height: 80px; }
-    button { width: 100%; padding: 10px; background: #0d6efd; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-    .alert { padding: 10px; border-radius: 5px; margin-bottom: 15px; display: none; text-align: center; font-size: 13px; }
-    .alert-success { background: #d1e7dd; color: #0f5132; }
-    .alert-danger { background: #f8d7da; color: #842029; }
+    body { background-color: #f4f6f9; }
+    .navbar-custom { background-color: #0d6efd; }
+    .card-custom {
+      max-width: 600px;
+      margin: 30px auto;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <h2>Form Tambah Tugas</h2><br>
-  <div id="alertBox" class="alert"></div>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">KTSM8 <span class="badge bg-light text-primary fs-6 ms-1">GURU</span></a>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <span class="text-white fw-bold me-2" id="namaGuru">Guru</span>
+      <button onclick="logout()" class="btn btn-danger btn-sm rounded-3">Logout</button>
+    </div>
+  </div>
+</nav>
 
-  <form id="formTugas">
-    <div class="form-group">
-      <label>Mata Pelajaran</label>
-      <select id="idMapel" required><option value="">-- Memuat Mapel --</option></select>
-    </div>
-    <div class="form-group">
-      <label>Judul Tugas</label>
-      <input type="text" id="judul" required>
-    </div>
-    <div class="form-group">
-      <label>Deskripsi / Instruksi</label>
-      <textarea id="deskripsi" required></textarea>
-    </div>
-    <div class="form-group">
-      <label>Link Materi (Google Drive/YouTube - Opsional)</label>
-      <input type="url" id="linkMateri" placeholder="https://...">
-    </div>
-    <div class="form-group">
-      <label>Deadline</label>
-      <input type="datetime-local" id="deadline" required>
-    </div>
-    <button type="submit" id="btnSubmit">Simpan Tugas</button>
-  </form>
+<!-- FORM CARD -->
+<div class="container">
+  <div class="card card-custom p-4">
+    <h3 class="fw-bold mb-4 text-center">Form Tambah Tugas</h3>
+    
+    <form id="formTambahTugas" onsubmit="simpanTugas(event)">
+      <div class="mb-3 text-start">
+        <label for="selectMapel" class="form-label fw-bold">Mata Pelajaran</label>
+        <select id="selectMapel" class="form-select" required>
+          <option value="">-- Memuat Mata Pelajaran --</option>
+        </select>
+      </div>
+
+      <div class="mb-3 text-start">
+        <label for="txtJudul" class="form-label fw-bold">Judul Tugas</label>
+        <input type="text" id="txtJudul" class="form-control" placeholder="Masukkan judul tugas" required>
+      </div>
+
+      <div class="mb-3 text-start">
+        <label for="txtDeskripsi" class="form-label fw-bold">Deskripsi / Instruksi</label>
+        <textarea id="txtDeskripsi" class="form-control" rows="4" placeholder="Tuliskan instruksi tugas di sini..." required></textarea>
+      </div>
+
+      <div class="mb-3 text-start">
+        <label for="txtLink" class="form-label fw-bold">Link Materi (Google Drive/YouTube - Opsional)</label>
+        <input type="url" id="txtLink" class="form-control" placeholder="https://...">
+      </div>
+
+      <div class="mb-4 text-start">
+        <label for="txtDeadline" class="form-label fw-bold">Deadline</label>
+        <input type="datetime-local" id="txtDeadline" class="form-control" required>
+      </div>
+
+      <button type="submit" id="btnSimpan" class="btn btn-primary btn-lg w-100 fw-bold">Simpan Tugas</button>
+    </form>
+  </div>
 </div>
 
 <script src="js/config.js"></script>
 <script src="js/auth-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
   const session = JSON.parse(localStorage.getItem('userSession'));
-  const selectMapel = document.getElementById('idMapel');
 
-  // Muat otomatis mapel yang diajar guru aktif
-  if (session && session.role === 'guru') {
+  document.addEventListener("DOMContentLoaded", function() {
+    if (session) {
+      document.getElementById('namaGuru').innerText = session.nama || 'Guru';
+    }
+    loadMapel();
+  });
+
+  function loadMapel() {
+    const select = document.getElementById('selectMapel');
+
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'getMapelGuru', idGuru: session.id })
+      body: JSON.stringify({ 
+        action: 'getMapel',
+        kelas: session ? session.kelas : 'guru'
+      })
     })
     .then(res => res.json())
     .then(data => {
-      if (data.status === 'success') {
-        selectMapel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
-        data.data.forEach(m => {
-          selectMapel.innerHTML += `<option value="${m.idMapel}">${m.namaMapel}</option>`;
+      if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
+        select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+        data.mapel.forEach(m => {
+          select.innerHTML += `<option value="${m.idMapel}" data-kelas="${m.kelas}">${m.namaMapel} (${m.idMapel}) - Kelas ${m.kelas}</option>`;
         });
       } else {
-        selectMapel.innerHTML = '<option value="">Gagal memuat mapel</option>';
+        select.innerHTML = '<option value="">Tidak ada mata pelajaran tersedia</option>';
       }
+    })
+    .catch(err => {
+      console.error(err);
+      select.innerHTML = '<option value="">Gagal memuat mapel</option>';
     });
   }
 
-  document.getElementById('formTugas').addEventListener('submit', function(e) {
+  function simpanTugas(e) {
     e.preventDefault();
-    const btn = document.getElementById('btnSubmit');
-    const alertBox = document.getElementById('alertBox');
-    
-    btn.disabled = true;
-    alertBox.style.display = 'none';
 
-    const payload = {
-      action: 'addTugas',
-      idMapel: selectMapel.value,
-      judul: document.getElementById('judul').value,
-      deskripsi: document.getElementById('deskripsi').value,
-      linkMateri: document.getElementById('linkMateri').value,
-      deadline: document.getElementById('deadline').value
-    };
+    const selectMapel = document.getElementById('selectMapel');
+    const selectedOption = selectMapel.options[selectMapel.selectedIndex];
+    const idMapel = selectMapel.value;
+    const targetKelas = selectedOption ? (selectedOption.getAttribute('data-kelas') || 'SEMUA') : 'SEMUA';
+
+    const judul = document.getElementById('txtJudul').value;
+    const deskripsi = document.getElementById('txtDeskripsi').value;
+    const linkMateri = document.getElementById('txtLink').value;
+    const deadline = document.getElementById('txtDeadline').value;
+
+    if (!idMapel) {
+      alert("Silakan pilih Mata Pelajaran terlebih dahulu!");
+      return;
+    }
+
+    const btnSimpan = document.getElementById('btnSimpan');
+    btnSimpan.disabled = true;
+    btnSimpan.innerText = 'Menyimpan...';
 
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        action: 'addTugas',
+        idMapel: idMapel,
+        judul: judul,
+        deskripsi: deskripsi,
+        linkMateri: linkMateri,
+        deadline: deadline,
+        kelas: targetKelas
+      })
     })
     .then(res => res.json())
     .then(data => {
-      alertBox.className = `alert alert-${data.status === 'success' ? 'success' : 'danger'}`;
-      alertBox.innerText = data.message;
-      alertBox.style.display = 'block';
-      if (data.status === 'success') document.getElementById('formTugas').reset();
+      btnSimpan.disabled = false;
+      btnSimpan.innerText = 'Simpan Tugas';
+
+      if (data.status === 'success') {
+        alert("Tugas berhasil ditambahkan!");
+        document.getElementById('formTambahTugas').reset();
+      } else {
+        alert("Gagal menyimpan tugas: " + data.message);
+      }
     })
-    .finally(() => btn.disabled = false);
-  });
+    .catch(err => {
+      console.error(err);
+      btnSimpan.disabled = false;
+      btnSimpan.innerText = 'Simpan Tugas';
+      alert("Terjadi kesalahan koneksi saat menyimpan tugas.");
+    });
+  }
+
+  function logout() {
+    localStorage.removeItem('userSession');
+    window.location.href = 'index.html';
+  }
 </script>
 </body>
 </html>
