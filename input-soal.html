@@ -87,11 +87,16 @@
     renderFormOpsi();
   });
 
-  function loadDaftarMapel() {
+function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
+    
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'getMapel', kelas: 'guru' })
+      body: JSON.stringify({ 
+        action: 'getMapel', 
+        kelas: 'guru',
+        idUser: session ? session.id : '' // <--- Tambahan ID Guru agar mapel terfilter
+      })
     })
     .then(res => res.json())
     .then(data => {
@@ -103,6 +108,10 @@
       } else {
         select.innerHTML = '<option value="">Belum ada mapel tersedia</option>';
       }
+    })
+    .catch(err => {
+      console.error(err);
+      select.innerHTML = '<option value="">Gagal memuat mapel</option>';
     });
   }
 
