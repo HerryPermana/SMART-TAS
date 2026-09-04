@@ -87,7 +87,7 @@
     renderFormOpsi();
   });
 
-function loadDaftarMapel() {
+  function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     
     fetch(CONFIG.GAS_URL, {
@@ -95,7 +95,7 @@ function loadDaftarMapel() {
       body: JSON.stringify({ 
         action: 'getMapel', 
         kelas: 'guru',
-        idUser: session ? session.id : '' // <--- Tambahan ID Guru agar mapel terfilter
+        idUser: session ? session.id : ''
       })
     })
     .then(res => res.json())
@@ -265,10 +265,13 @@ function loadDaftarMapel() {
         container.innerHTML = '';
         data.soal.forEach((s, i) => {
           container.innerHTML += `
-            <div class="card p-3 mb-2 border-start border-4 border-primary">
+            <div class="card p-3 mb-2 border-start border-4 border-primary shadow-sm">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="fw-bold">#${i+1} (${s.idSoal})</span>
-                <span class="badge bg-info text-dark badge-tipe">${s.tipe}</span>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-info text-dark badge-tipe me-1">${s.tipe}</span>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="hapusSoal('${s.idSoal}')" title="Hapus Soal">🗑️ Hapus</button>
+                </div>
               </div>
               <p class="mb-1 text-dark">${s.pertanyaan}</p>
               <small class="text-muted">Jumlah Opsi/Pernyataan: ${s.opsi.length}</small>
@@ -277,6 +280,37 @@ function loadDaftarMapel() {
       } else {
         container.innerHTML = '<div class="alert alert-warning text-center">Belum ada soal untuk mata pelajaran ini.</div>';
       }
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = '<div class="alert alert-danger text-center">Gagal memuat soal.</div>';
+    });
+  }
+
+  function hapusSoal(idSoal) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus soal dengan ID (${idSoal}) ini?`)) return;
+
+    const idMapel = document.getElementById('selectMapel').value;
+
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'deleteSoal',
+        idSoal: idSoal
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert("Soal berhasil dihapus!");
+        loadDaftarSoal(idMapel);
+      } else {
+        alert("Gagal menghapus soal: " + (data.message || "Terjadi kesalahan."));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Terjadi kesalahan koneksi saat menghapus soal.");
     });
   }
 </script>
