@@ -3,61 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ruang Ujian - KTSM8</title>
+  <title>Ruang Ujian - Portal Akademik</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f6f9; }
-    .card-soal { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card-soal { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .form-check-input:checked { background-color: #198754; border-color: #198754; }
-    .badge-pelanggaran { font-size: 0.85rem; }
-    .sticky-header { position: sticky; top: 10px; z-index: 1020; }
+    .badge-pelanggaran { font-size: 0.9rem; padding: 8px 12px; }
+    .sticky-header { position: sticky; top: 15px; z-index: 1020; }
     .table-kategori td, .table-kategori th { vertical-align: middle; }
+    .opsi-container .form-check { transition: background-color 0.2s; cursor: pointer; }
+    .opsi-container .form-check:hover { background-color: #e9ecef !important; }
   </style>
 </head>
 <body>
 
 <div class="container py-4">
   <!-- BOX PILIH MAPEL & MULAI -->
-  <div id="boxMulai" class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card card-soal p-4 text-center">
-        <h3 class="fw-bold mb-3">Ruang Ujian</h3>
-        <p class="text-muted">Pilih mata pelajaran dan tekan tombol di bawah untuk memulai ujian dalam mode layar penuh.</p>
+  <div id="boxMulai" class="row justify-content-center mt-5">
+    <div class="col-md-7">
+      <div class="card card-soal p-5 text-center">
+        <h2 class="fw-bold mb-3 text-success">📝 Ruang Ujian</h2>
+        <p class="text-muted mb-4">Pilih mata pelajaran yang tersedia untuk kelas Anda. Ujian akan berjalan dalam mode layar penuh (Fullscreen).</p>
         
-        <div class="mb-3 text-start">
-          <label for="selectMapel" class="form-label fw-bold">Mata Pelajaran</label>
+        <div class="mb-4 text-start">
+          <label for="selectMapel" class="form-label fw-bold">Pilih Mata Pelajaran:</label>
           <select id="selectMapel" class="form-select form-select-lg">
             <option value="">-- Memuat Mata Pelajaran --</option>
           </select>
         </div>
 
-        <div class="alert alert-warning text-start" role="alert">
-          <small><b>⚠️ Aturan Ujian:</b> Dilarang berpindah tab, membuka aplikasi lain, atau keluar dari mode layar penuh selama ujian berlangsung.</small>
+        <div class="alert alert-warning text-start mb-4" role="alert">
+          <small><b>⚠️ Aturan Ujian:</b><br>Dilarang berpindah tab, membuka aplikasi lain, atau keluar dari mode layar penuh selama ujian berlangsung. Pelanggaran akan dicatat otomatis oleh sistem.</small>
         </div>
 
-        <button onclick="mulaiUjian()" id="btnMulai" class="btn btn-success btn-lg w-100 fw-bold">🚀 Mulai Ujian Sekarang</button>
+        <div class="d-flex gap-2 justify-content-center">
+          <button onclick="kembaliKeDashboard()" class="btn btn-outline-secondary fw-bold px-4">Batal</button>
+          <button onclick="mulaiUjian()" id="btnMulai" class="btn btn-success fw-bold px-5">🚀 Mulai Ujian</button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- BOX AREA SOAL UJIAN -->
   <div id="boxSoal" style="display:none;">
-    <div class="card card-soal p-3 mb-4 sticky-header bg-white border-start border-4 border-success">
+    <div class="card card-soal p-3 mb-4 sticky-header bg-white border-start border-5 border-success">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-          <h5 id="judulMapel" class="fw-bold mb-0">Ujian Berlangsung</h5>
-          <small class="text-muted">Siswa: <b id="namaSiswa">-</b> | Kelas: <b id="kelasSiswa">-</b></small>
+          <h4 id="judulMapel" class="fw-bold mb-1 text-success">Ujian Berlangsung</h4>
+          <span class="text-muted small">Siswa: <b id="namaSiswa" class="text-dark">-</b> | Kelas: <b id="kelasSiswa" class="text-dark">-</b></span>
         </div>
         <div>
-          <span class="badge bg-danger badge-pelanggaran" id="badgePelanggaran">Pelanggaran: 0x</span>
+          <span class="badge bg-danger badge-pelanggaran rounded-pill shadow-sm" id="badgePelanggaran">Pelanggaran: 0x</span>
         </div>
       </div>
     </div>
 
     <div id="containerSoal" class="mb-4"></div>
 
-    <div class="card card-soal p-3 text-end">
-      <button onclick="submitJawaban()" id="btnSubmit" class="btn btn-primary btn-lg px-5 fw-bold">📤 Kirim Jawaban</button>
+    <div class="card card-soal p-4 text-end bg-light">
+      <button onclick="submitJawaban()" id="btnSubmit" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">📤 Selesai & Kirim Jawaban</button>
     </div>
   </div>
 </div>
@@ -70,23 +75,33 @@
   let jumlahPelanggaran = 0;
   let mapelTerpilih = '';
   let listSoalLoaded = [];
+  
+  // Validasi Sesi Login
   const session = JSON.parse(localStorage.getItem('userSession'));
+  if (!session) {
+    alert("Anda belum login! Silakan login terlebih dahulu.");
+    window.location.href = "index.html";
+  }
 
   document.addEventListener("DOMContentLoaded", function() {
-    if (session) {
-      document.getElementById('namaSiswa').innerText = session.nama || '-';
-      document.getElementById('kelasSiswa').innerText = session.kelas || '-';
-    }
+    document.getElementById('namaSiswa').innerText = session.nama || '-';
+    document.getElementById('kelasSiswa').innerText = session.kelas || '-';
     loadDaftarMapel();
   });
 
+  function kembaliKeDashboard() {
+    window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
+  }
+
+  // 1. Memuat Daftar Mapel (Sesuai Kelas)
   function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ 
         action: 'getMapel',
-        kelas: session ? session.kelas : ''
+        kelas: session.kelas,
+        idUser: session.id // Berguna jika guru ingin preview ujian
       })
     })
     .then(res => res.json())
@@ -94,10 +109,12 @@
       if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
         select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
         data.mapel.forEach(m => {
-          select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel})</option>`;
+          // Tampilkan opsi mapel dengan keterangan kelasnya (opsional)
+          const kelasLabel = m.kelas.toUpperCase() === 'SEMUA' ? 'Umum' : `Kelas ${m.kelas}`;
+          select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel}) - ${kelasLabel}</option>`;
         });
       } else {
-        select.innerHTML = '<option value="">Tidak ada mata pelajaran untuk kelas Anda</option>';
+        select.innerHTML = '<option value="">Tidak ada ujian aktif untuk kelas Anda saat ini</option>';
       }
     })
     .catch(() => {
@@ -105,14 +122,16 @@
     });
   }
 
+  // 2. Deteksi Pelanggaran (Meninggalkan Tab)
   document.addEventListener("visibilitychange", function() {
     if (document.hidden && document.getElementById('boxSoal').style.display !== 'none') {
       jumlahPelanggaran++;
       document.getElementById('badgePelanggaran').innerText = `Pelanggaran: ${jumlahPelanggaran}x`;
-      alert(`PERINGATAN! Terdeteksi meninggalkan layar ujian (${jumlahPelanggaran}x).\nCatatan ini akan dikirim ke sistem.`);
+      alert(`PERINGATAN! Terdeteksi meninggalkan layar ujian (${jumlahPelanggaran}x).\nSistem telah mencatat pelanggaran ini.`);
     }
   });
 
+  // 3. Mulai Ujian & Fullscreen
   function mulaiUjian() {
     const select = document.getElementById('selectMapel');
     mapelTerpilih = select.value;
@@ -123,23 +142,26 @@
     }
 
     if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn("Fullscreen diblokir oleh browser: ", err.message);
+      });
     }
 
     const selectedText = select.options[select.selectedIndex].text;
-    document.getElementById('judulMapel').innerText = selectedText;
+    document.getElementById('judulMapel').innerText = selectedText.split('-')[0].trim(); // Ambil nama mapel saja
     document.getElementById('boxMulai').style.display = 'none';
     document.getElementById('boxSoal').style.display = 'block';
 
     loadSoal(mapelTerpilih);
   }
 
+  // 4. Memuat Soal Ujian (Sesuai Mapel & Kelas)
   function loadSoal(idMapel) {
     const container = document.getElementById('containerSoal');
     container.innerHTML = `
-      <div class="card card-soal p-4 text-center">
-        <div class="spinner-border text-success mx-auto mb-2" role="status"></div>
-        <span>Memuat soal ujian...</span>
+      <div class="card card-soal p-5 text-center">
+        <div class="spinner-border text-success mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h5 class="text-muted">Memuat soal ujian...</h5>
       </div>`;
 
     fetch(CONFIG.GAS_URL, {
@@ -147,7 +169,7 @@
       body: JSON.stringify({ 
         action: 'getSoal', 
         idMapel: idMapel,
-        kelas: session ? session.kelas : ''
+        kelas: session.kelas // Parameter untuk memfilter akses soal
       })
     })
     .then(res => res.json())
@@ -171,7 +193,7 @@
             });
           }
           else if (tipe === 'PGK_MCMA') {
-            htmlKonten += `<div class="text-muted small mb-2"><i>(Pilih satu atau lebih jawaban yang benar)</i></div>`;
+            htmlKonten += `<div class="text-primary small fw-bold mb-3"><i>* Pilih satu atau lebih jawaban yang benar</i></div>`;
             s.opsi.forEach((o, oIdx) => {
               const inputId = `opt_${s.idSoal}_${oIdx}`;
               htmlKonten += `
@@ -183,12 +205,12 @@
           }
           else if (tipe === 'PGK_KATEGORI') {
             htmlKonten += `
-              <div class="text-muted small mb-2"><i>(Tentukan respon Benar/Salah untuk setiap pernyataan di bawah)</i></div>
+              <div class="text-primary small fw-bold mb-2"><i>* Tentukan respon Benar/Salah untuk setiap pernyataan di bawah</i></div>
               <div class="table-responsive">
                 <table class="table table-bordered table-kategori mt-2">
                   <thead class="table-secondary text-center">
                     <tr>
-                      <th>Pernyataan / Respon</th>
+                      <th>Pernyataan</th>
                       <th style="width: 100px;">Benar</th>
                       <th style="width: 100px;">Salah</th>
                     </tr>
@@ -208,35 +230,35 @@
                   </td>
                 </tr>`;
             });
-
             htmlKonten += `</tbody></table></div>`;
           }
 
           container.innerHTML += `
-            <div class="card card-soal p-4 mb-3">
-              <div class="d-flex align-items-start gap-2 mb-3">
-                <span class="badge bg-success fs-6">${idx + 1}</span>
-                <div class="fw-bold fs-5 text-dark">${s.pertanyaan}</div>
+            <div class="card card-soal p-4 mb-4">
+              <div class="d-flex align-items-start gap-3 mb-3">
+                <span class="badge bg-success fs-5 px-3 py-2 rounded-3">${idx + 1}</span>
+                <div class="fw-bold fs-5 text-dark mt-1" style="line-height: 1.5;">${s.pertanyaan}</div>
               </div>
-              <div class="opsi-container">${htmlKonten}</div>
+              <div class="opsi-container ms-1 ms-md-5">${htmlKonten}</div>
             </div>`;
         });
       } else {
-        container.innerHTML = `<div class="card card-soal p-4 text-center text-muted">${data.message || 'Belum ada soal yang tersedia.'}</div>`;
+        container.innerHTML = `<div class="alert alert-danger text-center fw-bold p-4 shadow-sm">${data.message || 'Belum ada soal yang tersedia untuk ujian ini.'}</div>`;
         document.getElementById('btnSubmit').style.display = 'none';
       }
     })
     .catch(() => {
-      container.innerHTML = `<div class="card card-soal p-4 text-center text-danger">Gagal memuat soal. Periksa koneksi internet Anda.</div>`;
+      container.innerHTML = `<div class="alert alert-danger text-center p-4">Gagal memuat soal. Periksa koneksi internet Anda.</div>`;
     });
   }
 
+  // 5. Submit Jawaban Ujian
   function submitJawaban() {
-    if (!confirm("Apakah Anda yakin ingin menyelesaikan ujian ini?")) return;
+    if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) return;
 
     const btnSubmit = document.getElementById('btnSubmit');
     btnSubmit.disabled = true;
-    btnSubmit.innerText = 'Mengirim Jawaban...';
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim Jawaban...';
 
     const listJawaban = [];
 
@@ -266,7 +288,7 @@
       method: 'POST',
       body: JSON.stringify({
         action: 'submitUjian',
-        idSiswa: session ? session.id : 'ANON',
+        idSiswa: session.id,
         idMapel: mapelTerpilih,
         jawaban: listJawaban,
         pelanggaran: jumlahPelanggaran
@@ -275,19 +297,19 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        alert(`Ujian Selesai!\nNilai Anda: ${data.nilai}`);
+        alert(`Ujian Berhasil Diselesaikan!\nNilai Akhir Anda: ${data.nilai}`);
         if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-        window.location.href = session && session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
+        window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
       } else {
         alert('Gagal mengirim jawaban: ' + data.message);
         btnSubmit.disabled = false;
-        btnSubmit.innerText = '📤 Kirim Jawaban';
+        btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
       }
     })
     .catch(() => {
       alert('Terjadi kesalahan koneksi saat mengirim jawaban.');
       btnSubmit.disabled = false;
-      btnSubmit.innerText = '📤 Kirim Jawaban';
+      btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
     });
   }
 </script>
