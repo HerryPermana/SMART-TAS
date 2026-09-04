@@ -6,25 +6,48 @@
   <title>Ruang Ujian - Portal Akademik</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { 
+      background-color: #f4f7f6; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none; /* Mencegah seleksi teks */
+      -webkit-user-select: none;
+    }
     .card-soal { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .form-check-input:checked { background-color: #198754; border-color: #198754; }
-    .badge-pelanggaran { font-size: 0.9rem; padding: 8px 12px; }
-    .sticky-header { position: sticky; top: 15px; z-index: 1020; }
+    .badge-pelanggaran { font-size: 0.85rem; padding: 6px 12px; }
+    .sticky-header { position: sticky; top: 10px; z-index: 1020; }
     .table-kategori td, .table-kategori th { vertical-align: middle; }
-    .opsi-container .form-check { transition: background-color 0.2s; cursor: pointer; }
-    .opsi-container .form-check:hover { background-color: #e9ecef !important; }
+    
+    .opsi-label {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .opsi-label:hover { background-color: #e9ecef; }
+    .form-check-input:checked + .opsi-text { font-weight: 600; color: #198754; }
+    
+    @media (max-width: 576px) {
+      .card-soal { padding: 1.25rem !important; }
+      .badge-pelanggaran { font-size: 0.75rem; }
+      .fs-resp-pertanyaan { font-size: 1rem !important; }
+    }
   </style>
 </head>
 <body>
 
-<div class="container py-4">
+<div class="container py-3 py-md-4">
   <!-- BOX PILIH MAPEL & MULAI -->
-  <div id="boxMulai" class="row justify-content-center mt-5">
-    <div class="col-md-7">
-      <div class="card card-soal p-5 text-center">
+  <div id="boxMulai" class="row justify-content-center mt-2 mt-md-5">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card card-soal p-4 p-md-5 text-center">
         <h2 class="fw-bold mb-3 text-success">📝 Ruang Ujian</h2>
-        <p class="text-muted mb-4">Pilih mata pelajaran yang tersedia untuk kelas Anda. Ujian akan berjalan dalam mode layar penuh (Fullscreen).</p>
+        <p class="text-muted mb-4 small">Pilih mata pelajaran yang tersedia untuk kelas Anda. Ujian akan berjalan dalam mode layar penuh (Fullscreen).</p>
         
         <div class="mb-4 text-start">
           <label for="selectMapel" class="form-label fw-bold">Pilih Mata Pelajaran:</label>
@@ -34,12 +57,15 @@
         </div>
 
         <div class="alert alert-warning text-start mb-4" role="alert">
-          <small><b>⚠️ Aturan Ujian:</b><br>Dilarang berpindah tab, membuka aplikasi lain, atau keluar dari mode layar penuh selama ujian berlangsung. Pelanggaran akan dicatat otomatis oleh sistem.</small>
+          <small><b>⚠️ Aturan Ketat Ujian:</b><br>
+          • Dilarang berpindah tab, membuka aplikasi lain, atau keluar dari mode layar penuh.<br>
+          • Dilarang melakukan Copy-Paste atau Klik Kanan.<br>
+          • Setiap pelanggaran akan dicatat otomatis oleh sistem.</small>
         </div>
 
-        <div class="d-flex gap-2 justify-content-center">
-          <button onclick="kembaliKeDashboard()" class="btn btn-outline-secondary fw-bold px-4">Batal</button>
-          <button onclick="mulaiUjian()" id="btnMulai" class="btn btn-success fw-bold px-5">🚀 Mulai Ujian</button>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+          <button onclick="kembaliKeDashboard()" class="btn btn-outline-secondary fw-bold px-4 order-2 order-sm-1">Batal</button>
+          <button onclick="mulaiUjian()" id="btnMulai" class="btn btn-success fw-bold px-5 order-1 order-sm-2">🚀 Mulai Ujian</button>
         </div>
       </div>
     </div>
@@ -47,10 +73,10 @@
 
   <!-- BOX AREA SOAL UJIAN -->
   <div id="boxSoal" style="display:none;">
-    <div class="card card-soal p-3 mb-4 sticky-header bg-white border-start border-5 border-success">
+    <div class="card card-soal p-3 mb-4 sticky-header bg-white border-start border-5 border-success shadow-sm">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-          <h4 id="judulMapel" class="fw-bold mb-1 text-success">Ujian Berlangsung</h4>
+          <h5 id="judulMapel" class="fw-bold mb-1 text-success">Ujian Berlangsung</h5>
           <span class="text-muted small">Siswa: <b id="namaSiswa" class="text-dark">-</b> | Kelas: <b id="kelasSiswa" class="text-dark">-</b></span>
         </div>
         <div>
@@ -61,8 +87,8 @@
 
     <div id="containerSoal" class="mb-4"></div>
 
-    <div class="card card-soal p-4 text-end bg-light">
-      <button onclick="submitJawaban()" id="btnSubmit" class="btn btn-primary btn-lg px-5 fw-bold shadow-sm">📤 Selesai & Kirim Jawaban</button>
+    <div class="card card-soal p-3 p-md-4 text-end bg-light">
+      <button onclick="submitJawaban()" id="btnSubmit" class="btn btn-primary btn-lg w-100 w-sm-auto px-5 fw-bold shadow-sm">📤 Selesai & Kirim Jawaban</button>
     </div>
   </div>
 </div>
@@ -75,6 +101,8 @@
   let jumlahPelanggaran = 0;
   let mapelTerpilih = '';
   let listSoalLoaded = [];
+  let isUjianAktif = false;
+  let isBlurTriggered = false;
   
   // Validasi Sesi Login
   const session = JSON.parse(localStorage.getItem('userSession'));
@@ -93,7 +121,6 @@
     window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
   }
 
-  // 1. Memuat Daftar Mapel (Sesuai Kelas)
   function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     fetch(CONFIG.GAS_URL, {
@@ -101,7 +128,7 @@
       body: JSON.stringify({ 
         action: 'getMapel',
         kelas: session.kelas,
-        idUser: session.id // Berguna jika guru ingin preview ujian
+        idUser: session.id
       })
     })
     .then(res => res.json())
@@ -109,7 +136,6 @@
       if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
         select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
         data.mapel.forEach(m => {
-          // Tampilkan opsi mapel dengan keterangan kelasnya (opsional)
           const kelasLabel = m.kelas.toUpperCase() === 'SEMUA' ? 'Umum' : `Kelas ${m.kelas}`;
           select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel}) - ${kelasLabel}</option>`;
         });
@@ -122,16 +148,58 @@
     });
   }
 
-  // 2. Deteksi Pelanggaran (Meninggalkan Tab)
+  // --- KEAMANAN & DETEKSI PELANGGARAN ---
+  function catatPelanggaran(alasan) {
+    if (!isUjianAktif || isBlurTriggered) return;
+    isBlurTriggered = true;
+    
+    jumlahPelanggaran++;
+    document.getElementById('badgePelanggaran').innerText = `Pelanggaran: ${jumlahPelanggaran}x`;
+    alert(`PERINGATAN VIOLASI (${jumlahPelanggaran}x)!\n\n${alasan}\n\nSistem telah mencatat aktivitas ini.`);
+    
+    setTimeout(() => { isBlurTriggered = false; }, 1000);
+  }
+
+  // Deteksi Pindah Tab & Aplikasi
   document.addEventListener("visibilitychange", function() {
-    if (document.hidden && document.getElementById('boxSoal').style.display !== 'none') {
-      jumlahPelanggaran++;
-      document.getElementById('badgePelanggaran').innerText = `Pelanggaran: ${jumlahPelanggaran}x`;
-      alert(`PERINGATAN! Terdeteksi meninggalkan layar ujian (${jumlahPelanggaran}x).\nSistem telah mencatat pelanggaran ini.`);
+    if (document.hidden && isUjianAktif) {
+      catatPelanggaran("Terdeteksi berpindah tab atau meninggalkan halaman ujian!");
     }
   });
 
-  // 3. Mulai Ujian & Fullscreen
+  window.addEventListener("blur", function() {
+    if (isUjianAktif) {
+      catatPelanggaran("Terdeteksi berpindah ke aplikasi lain atau membagi layar!");
+    }
+  });
+
+  // Deteksi Keluar Fullscreen
+  document.addEventListener("fullscreenchange", function() {
+    if (!document.fullscreenElement && isUjianAktif) {
+      catatPelanggaran("Anda telah keluar dari mode Layar Penuh (Fullscreen)!");
+    }
+  });
+
+  // Blokir Fitur Copy, Paste, & Klik Kanan
+  document.addEventListener("contextmenu", e => { if (isUjianAktif) e.preventDefault(); });
+  document.addEventListener("copy", e => { if (isUjianAktif) e.preventDefault(); });
+  document.addEventListener("paste", e => { if (isUjianAktif) e.preventDefault(); });
+
+  // Blokir Shortcut Keyboard (F12, Ctrl+C, Ctrl+V, Alt+Tab, Ctrl+Shift+I, dll)
+  document.addEventListener("keydown", function(e) {
+    if (!isUjianAktif) return;
+
+    if (
+      e.key === "F12" || 
+      (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'a' || e.key === 'p')) ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
+    ) {
+      e.preventDefault();
+      catatPelanggaran("Penggunaan tombol kombinasi terlarang terdeteksi!");
+    }
+  });
+
+  // --- FUNGSI UJIAN ---
   function mulaiUjian() {
     const select = document.getElementById('selectMapel');
     mapelTerpilih = select.value;
@@ -142,20 +210,20 @@
     }
 
     if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.warn("Fullscreen diblokir oleh browser: ", err.message);
+      document.documentElement.requestFullscreen().catch(() => {
+        console.warn("Fullscreen diblokir oleh browser.");
       });
     }
 
+    isUjianAktif = true;
     const selectedText = select.options[select.selectedIndex].text;
-    document.getElementById('judulMapel').innerText = selectedText.split('-')[0].trim(); // Ambil nama mapel saja
+    document.getElementById('judulMapel').innerText = selectedText.split('-')[0].trim();
     document.getElementById('boxMulai').style.display = 'none';
     document.getElementById('boxSoal').style.display = 'block';
 
     loadSoal(mapelTerpilih);
   }
 
-  // 4. Memuat Soal Ujian (Sesuai Mapel & Kelas)
   function loadSoal(idMapel) {
     const container = document.getElementById('containerSoal');
     container.innerHTML = `
@@ -169,7 +237,7 @@
       body: JSON.stringify({ 
         action: 'getSoal', 
         idMapel: idMapel,
-        kelas: session.kelas // Parameter untuk memfilter akses soal
+        kelas: session.kelas 
       })
     })
     .then(res => res.json())
@@ -186,9 +254,11 @@
             s.opsi.forEach((o, oIdx) => {
               const inputId = `opt_${s.idSoal}_${oIdx}`;
               htmlKonten += `
-                <div class="form-check p-2 rounded border mb-2 bg-light">
-                  <input class="form-check-input ms-1" type="radio" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
-                  <label class="form-check-label w-100 ms-2" for="${inputId}">${o}</label>
+                <div class="mb-2">
+                  <label class="opsi-label" for="${inputId}">
+                    <input class="form-check-input me-3" type="radio" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
+                    <span class="opsi-text">${o}</span>
+                  </label>
                 </div>`;
             });
           }
@@ -197,9 +267,11 @@
             s.opsi.forEach((o, oIdx) => {
               const inputId = `opt_${s.idSoal}_${oIdx}`;
               htmlKonten += `
-                <div class="form-check p-2 rounded border mb-2 bg-light">
-                  <input class="form-check-input ms-1" type="checkbox" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
-                  <label class="form-check-label w-100 ms-2" for="${inputId}">${o}</label>
+                <div class="mb-2">
+                  <label class="opsi-label" for="${inputId}">
+                    <input class="form-check-input me-3" type="checkbox" name="soal_${s.idSoal}" id="${inputId}" value="${o}">
+                    <span class="opsi-text">${o}</span>
+                  </label>
                 </div>`;
             });
           }
@@ -207,12 +279,12 @@
             htmlKonten += `
               <div class="text-primary small fw-bold mb-2"><i>* Tentukan respon Benar/Salah untuk setiap pernyataan di bawah</i></div>
               <div class="table-responsive">
-                <table class="table table-bordered table-kategori mt-2">
+                <table class="table table-bordered table-kategori align-middle mt-2 mb-0">
                   <thead class="table-secondary text-center">
                     <tr>
                       <th>Pernyataan</th>
-                      <th style="width: 100px;">Benar</th>
-                      <th style="width: 100px;">Salah</th>
+                      <th style="width: 80px;">Benar</th>
+                      <th style="width: 80px;">Salah</th>
                     </tr>
                   </thead>
                   <tbody>`;
@@ -221,7 +293,7 @@
               const nameGroup = `kategori_${s.idSoal}_${oIdx}`;
               htmlKonten += `
                 <tr>
-                  <td>${o}</td>
+                  <td class="small">${o}</td>
                   <td class="text-center">
                     <input class="form-check-input" type="radio" name="${nameGroup}" data-item="${o}" value="Benar">
                   </td>
@@ -234,12 +306,12 @@
           }
 
           container.innerHTML += `
-            <div class="card card-soal p-4 mb-4">
-              <div class="d-flex align-items-start gap-3 mb-3">
-                <span class="badge bg-success fs-5 px-3 py-2 rounded-3">${idx + 1}</span>
-                <div class="fw-bold fs-5 text-dark mt-1" style="line-height: 1.5;">${s.pertanyaan}</div>
+            <div class="card card-soal p-3 p-md-4 mb-3 mb-md-4">
+              <div class="d-flex align-items-start gap-2 gap-md-3 mb-3">
+                <span class="badge bg-success fs-6 fs-md-5 px-3 py-2 rounded-3">${idx + 1}</span>
+                <div class="fw-bold fs-6 fs-md-5 text-dark mt-1 fs-resp-pertanyaan" style="line-height: 1.5;">${s.pertanyaan}</div>
               </div>
-              <div class="opsi-container ms-1 ms-md-5">${htmlKonten}</div>
+              <div class="opsi-container ps-0 ps-md-4">${htmlKonten}</div>
             </div>`;
         });
       } else {
@@ -252,7 +324,7 @@
     });
   }
 
-  // 5. Submit Jawaban Ujian
+  // --- SUBMIT JAWABAN & AUTO LOGOUT ---
   function submitJawaban() {
     if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) return;
 
@@ -297,9 +369,19 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        alert(`Ujian Berhasil Diselesaikan!\nNilai Akhir Anda: ${data.nilai}`);
-        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-        window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
+        isUjianAktif = false; // Matikan deteksi pelanggaran
+        
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+
+        // Tampilkan Nilai
+        alert(`UJIAN SELESAI!\n\nNilai Akhir Anda: ${data.nilai}\nJumlah Pelanggaran: ${jumlahPelanggaran}x\n\nSesi Anda telah berakhir. Sistem akan otomatis melakukan logout.`);
+
+        // Hapus Sesi & Logout Otomatis
+        localStorage.removeItem('userSession');
+        sessionStorage.clear();
+        window.location.href = "index.html";
       } else {
         alert('Gagal mengirim jawaban: ' + data.message);
         btnSubmit.disabled = false;
