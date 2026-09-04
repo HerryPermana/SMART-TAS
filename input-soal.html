@@ -4,37 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Input Soal Ujian - KTSM8 Guru</title>
-  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #f4f6f9; }
     .card-custom { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .btn-primary { background-color: #0d6efd; border-color: #0d6efd; }
     .badge-tipe { font-size: 0.8rem; }
   </style>
 </head>
 <body>
 
-<!-- Navbar Ringkas -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container">
-    <a class="navbar-link navbar-brand fw-bold" href="dashboard-guru.html">⬅️ Kembali ke Dashboard Guru</a>
-    <span class="navbar-text text-white">
-      Login: <b id="namaGuru">-</b>
-    </span>
+    <a class="navbar-brand fw-bold" href="dashboard-guru.html">⬅️ Kembali ke Dashboard Guru</a>
+    <span class="navbar-text text-white">Login: <b id="namaGuru">-</b></span>
   </div>
 </nav>
 
 <div class="container mb-5">
   <div class="row g-4">
-    
-    <!-- KOLOM KIRI: FORM INPUT SOAL -->
     <div class="col-lg-7">
       <div class="card card-custom p-4">
         <h4 class="fw-bold mb-3 text-primary">➕ Tambah Soal Baru</h4>
         <form id="formInputSoal" onsubmit="simpanSoal(event)">
           
-          <!-- Pilih Mapel -->
           <div class="mb-3">
             <label for="selectMapel" class="form-label fw-bold">Mata Pelajaran</label>
             <select id="selectMapel" class="form-select" onchange="loadDaftarSoal(this.value)" required>
@@ -42,7 +34,6 @@
             </select>
           </div>
 
-          <!-- Tipe Soal -->
           <div class="mb-3">
             <label for="selectTipe" class="form-label fw-bold">Tipe Soal TKA</label>
             <select id="selectTipe" class="form-select" onchange="renderFormOpsi()" required>
@@ -52,30 +43,24 @@
             </select>
           </div>
 
-          <!-- Pertanyaan -->
           <div class="mb-3">
             <label for="txtPertanyaan" class="form-label fw-bold">Pokok Pertanyaan / Soal</label>
-            <textarea id="txtPertanyaan" class="form-rows-3 form-control" rows="3" placeholder="Tuliskan pertanyaan soal di sini..." required></textarea>
+            <textarea id="txtPertanyaan" class="form-control" rows="3" placeholder="Tuliskan pertanyaan soal di sini..." required></textarea>
           </div>
 
-          <!-- Dynamic Container Opsi & Kunci Jawaban -->
           <div class="mb-4">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <label class="form-label fw-bold mb-0">Opsi Jawaban &amp; Kunci Jawaban</label>
               <button type="button" class="btn btn-sm btn-outline-secondary" onclick="tambahBarisOpsi()">➕ Tambah Baris Opsi</button>
             </div>
-            <div id="containerFormOpsi" class="p-3 bg-light rounded border">
-              <!-- Rendered via JavaScript -->
-            </div>
+            <div id="containerFormOpsi" class="p-3 bg-light rounded border"></div>
           </div>
 
-          <!-- Submit Button -->
           <button type="submit" id="btnSimpan" class="btn btn-success btn-lg w-100 fw-bold">💾 Simpan Soal ke Spreadsheet</button>
         </form>
       </div>
     </div>
 
-    <!-- KOLOM KANAN: DAFTAR SOAL YANG SUDAH TERINPUT -->
     <div class="col-lg-5">
       <div class="card card-custom p-4">
         <h4 class="fw-bold mb-3">📋 Soal Terdaftar</h4>
@@ -84,7 +69,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -100,22 +84,21 @@
       document.getElementById('namaGuru').innerText = session.nama || 'Guru';
     }
     loadDaftarMapel();
-    renderFormOpsi(); // Default PG_SEDERHANA
+    renderFormOpsi();
   });
 
-  // 1. Ambil List Mapel
   function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'getMapel' })
+      body: JSON.stringify({ action: 'getMapel', kelas: 'guru' })
     })
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
         select.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
         data.mapel.forEach(m => {
-          select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel})</option>`;
+          select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel}) - Kelas ${m.kelas}</option>`;
         });
       } else {
         select.innerHTML = '<option value="">Belum ada mapel tersedia</option>';
@@ -123,37 +106,26 @@
     });
   }
 
-  // 2. Render Form Opsi Dinamis berdasarkan Tipe Soal
   function renderFormOpsi() {
     const tipe = document.getElementById('selectTipe').value;
     const container = document.getElementById('containerFormOpsi');
     container.innerHTML = '';
 
     if (tipe === 'PG_SEDERHANA') {
-      for (let i = 0; i < 4; i++) {
-        container.innerHTML += createOpsiRowPG(i, 'radio');
-      }
+      for (let i = 0; i < 4; i++) container.innerHTML += createOpsiRowPG(i, 'radio');
     } else if (tipe === 'PGK_MCMA') {
-      for (let i = 0; i < 4; i++) {
-        container.innerHTML += createOpsiRowPG(i, 'checkbox');
-      }
+      for (let i = 0; i < 4; i++) container.innerHTML += createOpsiRowPG(i, 'checkbox');
     } else if (tipe === 'PGK_KATEGORI') {
-      for (let i = 0; i < 3; i++) {
-        container.innerHTML += createOpsiRowKategori(i);
-      }
+      for (let i = 0; i < 3; i++) container.innerHTML += createOpsiRowKategori(i);
     }
   }
 
   function createOpsiRowPG(index, inputType) {
-    const labelBadge = String.fromCharCode(65 + index); // A, B, C, D...
+    const labelBadge = String.fromCharCode(65 + index);
     return `
       <div class="row g-2 align-items-center mb-2 opsi-item">
-        <div class="col-auto">
-          <span class="badge bg-secondary">${labelBadge}</span>
-        </div>
-        <div class="col">
-          <input type="text" class="form-control txt-opsi" placeholder="Tulis teks opsi ${labelBadge}..." required>
-        </div>
+        <div class="col-auto"><span class="badge bg-secondary">${labelBadge}</span></div>
+        <div class="col"><input type="text" class="form-control txt-opsi" placeholder="Tulis teks opsi ${labelBadge}..." required></div>
         <div class="col-auto text-center" style="min-width: 90px;">
           <div class="form-check form-check-inline me-0">
             <input class="form-check-input chk-kunci" type="${inputType}" name="kunciChoice" id="kunci_${index}">
@@ -166,9 +138,7 @@
   function createOpsiRowKategori(index) {
     return `
       <div class="row g-2 align-items-center mb-2 opsi-item">
-        <div class="col">
-          <input type="text" class="form-control txt-opsi" placeholder="Tulis pernyataan ${index + 1}..." required>
-        </div>
+        <div class="col"><input type="text" class="form-control txt-opsi" placeholder="Tulis pernyataan ${index + 1}..." required></div>
         <div class="col-auto">
           <select class="form-select select-kunci-kat" style="width: 110px;">
             <option value="Benar">Benar</option>
@@ -183,70 +153,50 @@
     const container = document.getElementById('containerFormOpsi');
     const currentCount = container.querySelectorAll('.opsi-item').length;
 
-    if (tipe === 'PG_SEDERHANA') {
-      container.insertAdjacentHTML('beforeend', createOpsiRowPG(currentCount, 'radio'));
-    } else if (tipe === 'PGK_MCMA') {
-      container.insertAdjacentHTML('beforeend', createOpsiRowPG(currentCount, 'checkbox'));
-    } else if (tipe === 'PGK_KATEGORI') {
-      container.insertAdjacentHTML('beforeend', createOpsiRowKategori(currentCount));
-    }
+    if (tipe === 'PG_SEDERHANA') container.insertAdjacentHTML('beforeend', createOpsiRowPG(currentCount, 'radio'));
+    else if (tipe === 'PGK_MCMA') container.insertAdjacentHTML('beforeend', createOpsiRowPG(currentCount, 'checkbox'));
+    else if (tipe === 'PGK_KATEGORI') container.insertAdjacentHTML('beforeend', createOpsiRowKategori(currentCount));
   }
 
-  // 3. Simpan Soal ke Apps Script
   function simpanSoal(e) {
     e.preventDefault();
     const idMapel = document.getElementById('selectMapel').value;
     const tipe = document.getElementById('selectTipe').value;
     const pertanyaan = document.getElementById('txtPertanyaan').value;
 
-    if (!idMapel) {
-      alert("Silakan pilih Mata Pelajaran terlebih dahulu!");
-      return;
-    }
+    if (!idMapel) { alert("Pilih Mata Pelajaran!"); return; }
 
     const arrayOpsi = [];
     let kunciJawaban = null;
 
     if (tipe === 'PG_SEDERHANA') {
-      const items = document.querySelectorAll('.opsi-item');
-      items.forEach(item => {
+      document.querySelectorAll('.opsi-item').forEach(item => {
         const txt = item.querySelector('.txt-opsi').value.trim();
-        const isKunci = item.querySelector('.chk-kunci').checked;
         if (txt) {
           arrayOpsi.push(txt);
-          if (isKunci) kunciJawaban = txt;
+          if (item.querySelector('.chk-kunci').checked) kunciJawaban = txt;
         }
       });
-      if (!kunciJawaban) {
-        alert("Pilih 1 kunci jawaban yang benar!");
-        return;
-      }
+      if (!kunciJawaban) { alert("Pilih 1 kunci jawaban!"); return; }
     } 
     else if (tipe === 'PGK_MCMA') {
       kunciJawaban = [];
-      const items = document.querySelectorAll('.opsi-item');
-      items.forEach(item => {
+      document.querySelectorAll('.opsi-item').forEach(item => {
         const txt = item.querySelector('.txt-opsi').value.trim();
-        const isKunci = item.querySelector('.chk-kunci').checked;
         if (txt) {
           arrayOpsi.push(txt);
-          if (isKunci) kunciJawaban.push(txt);
+          if (item.querySelector('.chk-kunci').checked) kunciJawaban.push(txt);
         }
       });
-      if (kunciJawaban.length === 0) {
-        alert("Pilih minimal 1 kunci jawaban yang benar!");
-        return;
-      }
+      if (kunciJawaban.length === 0) { alert("Pilih minimal 1 kunci jawaban!"); return; }
     } 
     else if (tipe === 'PGK_KATEGORI') {
       kunciJawaban = {};
-      const items = document.querySelectorAll('.opsi-item');
-      items.forEach(item => {
+      document.querySelectorAll('.opsi-item').forEach(item => {
         const txt = item.querySelector('.txt-opsi').value.trim();
-        const kat = item.querySelector('.select-kunci-kat').value;
         if (txt) {
           arrayOpsi.push(txt);
-          kunciJawaban[txt] = kat;
+          kunciJawaban[txt] = item.querySelector('.select-kunci-kat').value;
         }
       });
     }
@@ -287,7 +237,6 @@
     });
   }
 
-  // 4. Load Daftar Soal Terdaftar untuk Mapel Aktif
   function loadDaftarSoal(idMapel) {
     const container = document.getElementById('containerListSoal');
     if (!idMapel) {
@@ -299,7 +248,7 @@
 
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'getSoal', idMapel: idMapel })
+      body: JSON.stringify({ action: 'getSoal', idMapel: idMapel, kelas: 'guru' })
     })
     .then(res => res.json())
     .then(data => {
