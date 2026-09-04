@@ -3,27 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Guru - KTSM8</title>
+  <title>Dashboard Guru - Portal Akademik</title>
+  <!-- Menggunakan Bootstrap 5 untuk tampilan responsif dan modern -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f4f6f9; }
-    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
-    .card-menu { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; text-decoration: none; color: #333; font-weight: bold; border-left: 5px solid #0d6efd; transition: transform 0.2s; }
-    .card-menu:hover { transform: translateY(-3px); }
+    /* Menggunakan font yang lebih ramah dan modern */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    
+    body { 
+      background-color: #f4f7f6; 
+      font-family: 'Nunito', sans-serif; 
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    /* Navbar Gradient */
+    .navbar-custom { 
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Hero / Welcome Section */
+    .welcome-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+
+    /* Panduan Box */
+    .guide-box {
+      background-color: #eef2f7;
+      border-left: 5px solid #00f2fe;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .guide-box ul { margin-bottom: 0; padding-left: 20px; }
+    .guide-box li { margin-bottom: 8px; color: #555; }
+
+    /* Card Menu Grid */
+    .card-menu { 
+      background: #fff; 
+      border-radius: 16px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+      text-align: center; 
+      text-decoration: none; 
+      color: #333; 
+      padding: 30px 20px;
+      transition: all 0.3s ease; 
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-menu:hover { 
+      transform: translateY(-8px); 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+      color: #333;
+    }
+    .card-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+    }
+    
+    /* Warna aksen untuk masing-masing kartu */
+    .tugas-card { border-bottom: 6px solid #0d6efd; }
+    .soal-card { border-bottom: 6px solid #198754; }
+    .ujian-card { border-bottom: 6px solid #ffc107; }
+
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 20px 0;
+      color: #888;
+      font-size: 0.9rem;
+      background: #fff;
+      border-top: 1px solid #eaeaea;
+    }
+    .footer span { font-weight: bold; color: #4facfe; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Menu Utama Guru</h2>
-  <div class="grid">
-    <a href="add-tugas.html" class="card-menu">➕ Tambah Tugas / Materi</a>
-    <a href="ujian.html" class="card-menu">📝 Ruang Ujian (Pratinjau)</a>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">🎓 Portal Guru</a>
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <span class="text-white fw-bold me-3" id="namaGuru">Halo, Guru!</span>
+      <button onclick="logout()" class="btn btn-light btn-sm fw-bold text-primary rounded-pill px-4">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container flex-grow-1">
+  <!-- WELCOME SECTION -->
+  <div class="welcome-card text-center">
+    <h2 class="fw-bold text-dark mb-2">Selamat Datang di Dashboard Guru</h2>
+    <p class="text-muted">Kelola tugas, susun materi, dan pantau ujian siswa Anda dengan mudah dalam satu tempat.</p>
+  </div>
+
+  <!-- PETUNJUK PENGISIAN -->
+  <div class="guide-box">
+    <h5 class="fw-bold mb-3">💡 Petunjuk Penggunaan Panel:</h5>
+    <ul>
+      <li><strong>Tambah Tugas / Materi:</strong> Gunakan menu ini untuk mendistribusikan materi (Link Google Drive/YouTube) dan tugas harian. Anda dapat menentukan batas waktu (deadline) pengumpulan.</li>
+      <li><strong>Input Soal Ujian:</strong> Gunakan menu ini untuk menyusun bank soal (Pilihan Ganda Biasa, Kompleks, atau Benar/Salah) yang akan digunakan saat ujian berlangsung.</li>
+      <li><strong>Pratinjau Ruang Ujian:</strong> Lihat dan ujicoba tampilan aplikasi dari sudut pandang siswa sebelum ujian sesungguhnya dimulai.</li>
+    </ul>
+  </div>
+
+  <!-- MENU GRID -->
+  <div class="row g-4 mb-5">
+    
+    <!-- Menu 1: Tambah Tugas -->
+    <div class="col-md-4">
+      <a href="add-tugas.html" class="card-menu tugas-card">
+        <div class="card-icon">📚</div>
+        <h4 class="fw-bold">Tambah Tugas</h4>
+        <p class="text-muted mt-2 mb-0">Bagikan materi pelajaran, modul, atau tugas harian ke kelas.</p>
+      </a>
+    </div>
+
+    <!-- Menu 2: Input Soal -->
+    <div class="col-md-4">
+      <a href="input-soal.html" class="card-menu soal-card">
+        <div class="card-icon">✍️</div>
+        <h4 class="fw-bold">Input Soal Ujian</h4>
+        <p class="text-muted mt-2 mb-0">Susun soal-soal ujian (PG, Kompleks, Kategori) langsung ke database.</p>
+      </a>
+    </div>
+
+    <!-- Menu 3: Ruang Ujian -->
+    <div class="col-md-4">
+      <a href="ujian.html" class="card-menu ujian-card">
+        <div class="card-icon">🚀</div>
+        <h4 class="fw-bold">Ruang Ujian</h4>
+        <p class="text-muted mt-2 mb-0">Simulasi pratinjau tampilan ujian dari sisi siswa (Preview).</p>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="container">
+    &copy; 2026 Portal Akademik. Develop by <span>HerryPermana Kang_ngopi404</span>.
   </div>
 </div>
 
 <script src="js/config.js"></script>
 <script src="js/auth-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Menampilkan Nama Guru di Navbar
+  document.addEventListener("DOMContentLoaded", function() {
+    const session = JSON.parse(localStorage.getItem('userSession'));
+    if (session && session.role === 'guru') {
+      document.getElementById('namaGuru').innerText = "Halo, " + session.nama + "!";
+    } else {
+      // Jika yang login bukan guru, tendang kembali ke halaman login
+      alert("Akses ditolak! Halaman ini khusus Guru.");
+      window.location.href = "index.html";
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('userSession');
+    window.location.href = 'index.html';
+  }
+</script>
 </body>
 </html>
