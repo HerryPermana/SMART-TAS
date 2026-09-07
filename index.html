@@ -3,199 +3,924 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Login - Portal Akademik</title>
-  <!-- Menggunakan Bootstrap 5 untuk layout & responsivitas -->
+
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <style>
-    /* Menggunakan font Nunito agar senada dengan halaman lainnya */
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
-    
-    body { 
-      background-color: #f8f9fa; 
-      font-family: 'Nunito', sans-serif; 
-      /* Menambahkan aksen background lembut di area login */
-      background-image: radial-gradient(circle at top right, #e0f2fe 0%, #f8f9fa 40%);
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
       min-height: 100vh;
+      font-family: 'Nunito', sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    
-    /* Card Custom Style */
-    .card-login { 
-      background: #ffffff;
-      border: 1px solid #edf2f9; 
-      border-radius: 24px; 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.05); 
-      width: 100%; 
-      max-width: 400px;
-      padding: 40px 30px;
-      position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+
+      background:
+        radial-gradient(circle at 10% 20%, rgba(79,172,254,.20), transparent 30%),
+        radial-gradient(circle at 90% 80%, rgba(0,242,254,.18), transparent 30%),
+        linear-gradient(135deg, #eef7ff, #f8fbff 45%, #eefcff);
     }
 
-    /* Aksen garis atas pada card */
+    /* ==============================
+       BACKGROUND DECORATION
+    ============================== */
+
+    .background-shape {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(1px);
+      opacity: .45;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .shape-1 {
+      width: 180px;
+      height: 180px;
+      background: rgba(79,172,254,.15);
+      top: 5%;
+      left: 5%;
+      animation: float 7s ease-in-out infinite;
+    }
+
+    .shape-2 {
+      width: 250px;
+      height: 250px;
+      background: rgba(0,242,254,.12);
+      bottom: 5%;
+      right: 5%;
+      animation: float 9s ease-in-out infinite reverse;
+    }
+
+    .shape-3 {
+      width: 100px;
+      height: 100px;
+      background: rgba(99,102,241,.10);
+      top: 40%;
+      right: 15%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(8deg);
+      }
+    }
+
+    /* ==============================
+       MAIN CONTAINER
+    ============================== */
+
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ==============================
+       LOGIN CARD
+    ============================== */
+
+    .card-login {
+      position: relative;
+      width: 100%;
+      padding: 42px 34px 30px;
+
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 28px;
+
+      box-shadow:
+        0 25px 60px rgba(31, 91, 145, .12),
+        0 5px 20px rgba(0,0,0,.04);
+
+      overflow: hidden;
+
+      animation: cardAppear .7s ease;
+    }
+
+    @keyframes cardAppear {
+      from {
+        opacity: 0;
+        transform: translateY(25px) scale(.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Top gradient */
+
     .card-login::before {
       content: "";
       position: absolute;
       top: 0;
       left: 0;
+
       width: 100%;
       height: 6px;
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+      background: linear-gradient(
+        90deg,
+        #4facfe,
+        #00c6ff,
+        #00f2fe,
+        #4facfe
+      );
+
+      background-size: 300% 100%;
+
+      animation: gradientMove 5s linear infinite;
     }
 
-    /* Ikon Logo */
+    @keyframes gradientMove {
+      0% {
+        background-position: 0%;
+      }
+
+      100% {
+        background-position: 300%;
+      }
+    }
+
+    /* ==============================
+       LOGO
+    ============================== */
+
     .icon-wrapper {
-      width: 70px;
-      height: 70px;
-      background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
-      border: 2px solid #bae6fd;
-      border-radius: 50%;
+      position: relative;
+
+      width: 82px;
+      height: 82px;
+
+      margin: 0 auto 18px;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      margin: 0 auto 15px auto;
-      box-shadow: 0 8px 15px rgba(79, 172, 254, 0.15);
+
+      border-radius: 24px;
+
+      background: linear-gradient(
+        145deg,
+        #e0f2fe,
+        #ffffff
+      );
+
+      border: 1px solid #bae6fd;
+
+      box-shadow:
+        0 15px 30px rgba(79,172,254,.18);
+
+      font-size: 2.5rem;
+
+      animation: logoFloat 4s ease-in-out infinite;
     }
 
-    /* Form Styling */
-    .form-label { 
-      color: #495057; 
+    .icon-wrapper::after {
+      content: "";
+
+      position: absolute;
+
+      width: 100%;
+      height: 100%;
+
+      border-radius: 24px;
+
+      border: 2px solid rgba(79,172,254,.12);
+
+      transform: scale(1.15);
+
+      animation: pulse 2.5s ease-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-7px);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: .7;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.35);
+      }
+    }
+
+    /* ==============================
+       TITLE
+    ============================== */
+
+    .title {
+      font-weight: 900;
+      letter-spacing: -.5px;
+      color: #172033;
+    }
+
+    .subtitle {
+      color: #718096;
+      font-size: .9rem;
+      font-weight: 600;
+    }
+
+    /* ==============================
+       ALERT
+    ============================== */
+
+    .alert-custom {
+      display: none;
+
+      border: none;
+      border-radius: 14px;
+
+      padding: 13px 15px;
+
+      font-size: .85rem;
       font-weight: 700;
-      font-size: 0.9rem;
+
+      background: #fff1f2;
+      color: #be123c;
+
+      animation: shake .4s ease;
     }
+
+    @keyframes shake {
+      0%, 100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
+
+    /* ==============================
+       FORM
+    ============================== */
+
+    .form-label {
+      color: #374151;
+      font-size: .88rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .input-group-custom {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+
+      left: 15px;
+      top: 50%;
+
+      transform: translateY(-50%);
+
+      color: #94a3b8;
+
+      z-index: 5;
+
+      transition: .3s;
+    }
+
     .form-control {
-      border-radius: 12px;
-      border: 1px solid #dee2e6;
-      padding: 12px 15px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      background-color: #fdfdfe;
+      height: 50px;
+
+      border-radius: 14px;
+
+      border: 1.5px solid #e2e8f0;
+
+      background: rgba(248,250,252,.8);
+
+      padding: 10px 45px;
+
+      font-size: .92rem;
+      font-weight: 600;
+
+      transition: all .3s ease;
     }
+
+    .form-control::placeholder {
+      color: #a0aec0;
+      font-weight: 500;
+    }
+
+    .form-control:hover {
+      border-color: #bfdbfe;
+      background: #fff;
+    }
+
     .form-control:focus {
       border-color: #4facfe;
-      background-color: #ffffff;
-      box-shadow: 0 0 0 0.25rem rgba(79, 172, 254, 0.25);
+
+      background: #fff;
+
+      box-shadow:
+        0 0 0 4px rgba(79,172,254,.12);
+
+      outline: none;
     }
 
-    /* Tombol Login Gradient */
-    .btn-login {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    .form-control:focus + .input-focus-line {
+      width: 100%;
+    }
+
+    .input-group-custom:focus-within .input-icon {
+      color: #4facfe;
+    }
+
+    /* Password toggle */
+
+    .password-toggle {
+      position: absolute;
+
+      right: 15px;
+      top: 50%;
+
+      transform: translateY(-50%);
+
       border: none;
-      color: white;
-      border-radius: 12px;
-      font-weight: 800;
-      padding: 12px;
-      font-size: 1rem;
-      letter-spacing: 0.5px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: transparent;
+
+      color: #94a3b8;
+
+      cursor: pointer;
+
+      z-index: 6;
+
+      transition: .2s;
     }
+
+    .password-toggle:hover {
+      color: #4facfe;
+    }
+
+    /* ==============================
+       LOGIN BUTTON
+    ============================== */
+
+    .btn-login {
+      position: relative;
+
+      height: 52px;
+
+      border: none;
+      border-radius: 14px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #4facfe 0%,
+          #00c6ff 50%,
+          #00e5ff 100%
+        );
+
+      background-size: 200% 200%;
+
+      color: #fff;
+
+      font-size: .98rem;
+      font-weight: 900;
+
+      letter-spacing: .4px;
+
+      box-shadow:
+        0 10px 25px rgba(0,198,255,.22);
+
+      transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        background-position .5s ease;
+
+      overflow: hidden;
+    }
+
+    .btn-login::before {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: -100%;
+
+      width: 70%;
+      height: 100%;
+
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.35),
+        transparent
+      );
+
+      transform: skewX(-20deg);
+
+      transition: .6s;
+    }
+
+    .btn-login:hover::before {
+      left: 130%;
+    }
+
     .btn-login:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
-      color: white;
+      transform: translateY(-3px);
+
+      box-shadow:
+        0 15px 30px rgba(0,198,255,.32);
+
+      background-position: 100% 50%;
+
+      color: #fff;
     }
+
+    .btn-login:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
     .btn-login:disabled {
-      background: #a5c7fe;
-      transform: none;
-      box-shadow: none;
+      opacity: .7;
       cursor: not-allowed;
     }
 
-    /* Alert Styling */
-    .alert-custom {
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 12px;
-      display: none;
-      border: none;
+    /* ==============================
+       FOOTER
+    ============================== */
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
     }
+
+    .footer-copy {
+      color: #94a3b8;
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    .developer {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+
+      margin-top: 8px;
+
+      color: #64748b;
+
+      font-size: .78rem;
+      font-weight: 700;
+
+      text-decoration: none;
+
+      transition: .25s;
+    }
+
+    .developer:hover {
+      color: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .github-icon {
+      width: 28px;
+      height: 28px;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #172033;
+      color: white;
+
+      font-size: .9rem;
+
+      transition: .3s;
+    }
+
+    .developer:hover .github-icon {
+      transform: rotate(8deg) scale(1.08);
+      background: #2563eb;
+    }
+
+    .developer-url {
+      color: #2563eb;
+      font-weight: 800;
+    }
+
+    /* ==============================
+       RESPONSIVE
+    ============================== */
+
+    @media (max-width: 576px) {
+
+      body {
+        align-items: center;
+      }
+
+      .login-container {
+        padding: 15px;
+      }
+
+      .card-login {
+        padding: 36px 24px 25px;
+        border-radius: 24px;
+      }
+
+      .icon-wrapper {
+        width: 72px;
+        height: 72px;
+        font-size: 2.1rem;
+      }
+
+      .title {
+        font-size: 1.45rem;
+      }
+
+      .shape-1 {
+        width: 120px;
+        height: 120px;
+      }
+
+      .shape-2 {
+        width: 160px;
+        height: 160px;
+      }
+    }
+
   </style>
 </head>
+
 <body>
 
-<div class="container d-flex justify-content-center">
+<!-- Background Decoration -->
+<div class="background-shape shape-1"></div>
+<div class="background-shape shape-2"></div>
+<div class="background-shape shape-3"></div>
+
+
+<div class="login-container">
+
   <div class="card-login">
-    
-    <!-- Header Logo & Title -->
+
+    <!-- Header -->
     <div class="text-center mb-4">
-      <div class="icon-wrapper">🎓</div>
-      <h3 class="fw-bold text-dark mb-1">Portal Akademik</h3>
-      <p class="text-secondary small fw-semibold">Silakan masuk untuk melanjutkan</p>
+
+      <div class="icon-wrapper">
+        🎓
+      </div>
+
+      <h3 class="title mb-1">
+        Portal Akademik
+      </h3>
+
+      <p class="subtitle mb-0">
+        Selamat datang kembali 👋
+      </p>
+
+      <small class="text-secondary">
+        Silakan masuk untuk melanjutkan
+      </small>
+
     </div>
 
-    <!-- Alert Box -->
-    <div id="alertBox" class="alert alert-danger alert-custom text-center mb-4" role="alert"></div>
-    
-    <!-- Form Login -->
-    <form id="formLogin">
-      <div class="mb-3">
-        <label for="username" class="form-label">ID / Username</label>
-        <input type="text" id="username" class="form-control" placeholder="Masukkan ID Anda" required autocomplete="off">
-      </div>
-      
-      <div class="mb-4">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="Masukkan password" required>
-      </div>
-      
-      <button type="submit" id="btnLogin" class="btn btn-login w-100 mt-2">
-        Masuk
-      </button>
-    </form>
-    
-    <div class="text-center mt-4">
-      <small class="text-muted fw-semibold">&copy; 2026 Portal Akademik</small>
+
+    <!-- Alert -->
+    <div
+      id="alertBox"
+      class="alert alert-custom text-center mb-4"
+      role="alert">
     </div>
+
+
+    <!-- Login Form -->
+    <form id="formLogin">
+
+      <!-- Username -->
+      <div class="mb-3">
+
+        <label
+          for="username"
+          class="form-label">
+          ID / Username
+        </label>
+
+        <div class="input-group-custom">
+
+          <i class="fa-solid fa-user input-icon"></i>
+
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            placeholder="Masukkan ID Anda"
+            required
+            autocomplete="off">
+
+        </div>
+
+      </div>
+
+
+      <!-- Password -->
+      <div class="mb-4">
+
+        <label
+          for="password"
+          class="form-label">
+          Password
+        </label>
+
+        <div class="input-group-custom">
+
+          <i class="fa-solid fa-lock input-icon"></i>
+
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            placeholder="Masukkan password"
+            required>
+
+          <button
+            type="button"
+            class="password-toggle"
+            id="togglePassword"
+            aria-label="Tampilkan password">
+
+            <i class="fa-solid fa-eye"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Login Button -->
+      <button
+        type="submit"
+        id="btnLogin"
+        class="btn btn-login w-100">
+
+        <i class="fa-solid fa-right-to-bracket me-2"></i>
+        Masuk
+
+      </button>
+
+    </form>
+
+
+    <!-- Footer -->
+    <div class="footer">
+
+      <div class="footer-copy">
+        © 2026 Portal Akademik
+      </div>
+
+      <a
+        href="https://github.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="developer">
+
+        <span class="github-icon">
+          <i class="fa-brands fa-github"></i>
+        </span>
+
+        <span>
+          Developed by
+          <span class="developer-url">
+            www.eshape.my.id
+          </span>
+        </span>
+
+      </a>
+
+    </div>
+
   </div>
+
 </div>
 
-<script src="js/config.js"></script>
-<script>
-  document.getElementById('formLogin').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnLogin');
-    const alertBox = document.getElementById('alertBox');
-    
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memeriksa...';
-    alertBox.style.display = 'none';
 
-    fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'login',
-        username: document.getElementById('username').value.trim(),
-        password: document.getElementById('password').value.trim()
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        localStorage.setItem('userSession', JSON.stringify(data.user));
-        // Redirect berdasarkan role
-        if (data.user.role === 'guru') {
-          window.location.href = 'dashboard-guru.html';
-        } else {
-          window.location.href = 'dashboard-siswa.html';
-        }
-      } else {
-        alertBox.innerText = data.message;
-        alertBox.style.display = 'block';
-        btn.disabled = false;
-        btn.innerText = 'Masuk';
-      }
-    })
-    .catch(() => {
-      alertBox.innerText = 'Koneksi gagal! Silakan periksa jaringan Anda.';
-      alertBox.style.display = 'block';
-      btn.disabled = false;
-      btn.innerText = 'Masuk';
-    });
+<!-- Config -->
+<script src="js/config.js"></script>
+
+
+<script>
+
+  /* =========================================
+     PASSWORD SHOW / HIDE
+  ========================================= */
+
+  const passwordInput =
+    document.getElementById('password');
+
+  const togglePassword =
+    document.getElementById('togglePassword');
+
+  togglePassword.addEventListener('click', function () {
+
+    const icon =
+      this.querySelector('i');
+
+    if (passwordInput.type === 'password') {
+
+      passwordInput.type = 'text';
+
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+
+    } else {
+
+      passwordInput.type = 'password';
+
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+
+    }
+
   });
+
+
+  /* =========================================
+     LOGIN
+  ========================================= */
+
+  document
+    .getElementById('formLogin')
+    .addEventListener('submit', function(e) {
+
+      e.preventDefault();
+
+      const btn =
+        document.getElementById('btnLogin');
+
+      const alertBox =
+        document.getElementById('alertBox');
+
+      const username =
+        document.getElementById('username')
+          .value
+          .trim();
+
+      const password =
+        document.getElementById('password')
+          .value
+          .trim();
+
+
+      /* Loading */
+
+      btn.disabled = true;
+
+      btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2" role="status"></span>' +
+        'Memeriksa...';
+
+      alertBox.style.display = 'none';
+
+
+      /* Request */
+
+      fetch(CONFIG.GAS_URL, {
+
+        method: 'POST',
+
+        body: JSON.stringify({
+
+          action: 'login',
+
+          username: username,
+
+          password: password
+
+        })
+
+      })
+
+      .then(res => res.json())
+
+      .then(data => {
+
+        if (data.status === 'success') {
+
+          /* Save session */
+
+          localStorage.setItem(
+            'userSession',
+            JSON.stringify(data.user)
+          );
+
+
+          /* Success animation */
+
+          btn.innerHTML =
+            '<i class="fa-solid fa-circle-check me-2"></i>' +
+            'Berhasil!';
+
+
+          /* Redirect */
+
+          setTimeout(() => {
+
+            if (data.user.role === 'guru') {
+
+              window.location.href =
+                'dashboard-guru.html';
+
+            } else {
+
+              window.location.href =
+                'dashboard-siswa.html';
+
+            }
+
+          }, 500);
+
+
+        } else {
+
+          showError(data.message);
+
+        }
+
+      })
+
+      .catch(() => {
+
+        showError(
+          'Koneksi gagal! Silakan periksa jaringan Anda.'
+        );
+
+      });
+
+
+      /* Error Handler */
+
+      function showError(message) {
+
+        alertBox.innerHTML =
+          '<i class="fa-solid fa-circle-exclamation me-2"></i>' +
+          message;
+
+        alertBox.style.display = 'block';
+
+
+        btn.disabled = false;
+
+        btn.innerHTML =
+          '<i class="fa-solid fa-right-to-bracket me-2"></i>' +
+          'Masuk';
+
+      }
+
+    });
+
 </script>
+
 </body>
 </html>
