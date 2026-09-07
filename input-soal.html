@@ -3,69 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Input Soal Ujian - KTSM8 Guru</title>
+  <title>Input Soal Ujian - Portal Akademik Guru</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f6f9; }
-    .card-custom { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .badge-tipe { font-size: 0.8rem; }
+    /* Font selaras dengan Dashboard */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    
+    body { 
+      background-color: #f8f9fa; 
+      font-family: 'Nunito', sans-serif; 
+    }
+    
+    /* Navbar Gradient */
+    .navbar-custom { 
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Card Custom Style */
+    .card-custom { 
+      background: #ffffff;
+      border: 1px solid #edf2f9; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+    }
+
+    /* Form Styling */
+    .form-label { color: #495057; }
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 0.25rem rgba(79, 172, 254, 0.25);
+    }
+
+    /* Container Opsi Jawaban */
+    .opsi-container {
+      background: #fdfdfe;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .opsi-item {
+      background: #ffffff;
+      border: 1px solid #f1f3f5;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+    .opsi-item:hover {
+      border-color: #4facfe;
+      box-shadow: 0 4px 10px rgba(79, 172, 254, 0.1);
+    }
+
+    /* Tombol Simpan Gradient */
+    .btn-simpan {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      border: none;
+      color: white;
+      border-radius: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .btn-simpan:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+      color: white;
+    }
+
+    /* List Soal Styling */
+    .list-soal-wrapper {
+      max-height: 700px; 
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    /* Kustomisasi Scrollbar untuk panel kanan */
+    .list-soal-wrapper::-webkit-scrollbar { width: 6px; }
+    .list-soal-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    .list-soal-wrapper::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+    .list-soal-wrapper::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+    .soal-card {
+      border-radius: 12px;
+      border: none;
+      border-left: 5px solid #4facfe !important;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .soal-card:hover {
+      transform: translateX(4px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .badge-tipe { font-size: 0.75rem; letter-spacing: 0.5px; }
+    .badge-opsi { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold;}
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="dashboard-guru.html">⬅️ Kembali ke Dashboard Guru</a>
-    <span class="navbar-text text-white">Login: <b id="namaGuru">-</b></span>
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="dashboard-guru.html">
+      <span class="fs-4">⬅️</span> <span>Kembali ke Dashboard</span>
+    </a>
+    <div class="ms-auto">
+      <span class="text-white fw-semibold px-3 py-1 rounded-pill bg-white bg-opacity-25">
+        👤 <span id="namaGuru">Guru</span>
+      </span>
+    </div>
   </div>
 </nav>
 
 <div class="container mb-5">
+  <!-- HEADER TITLE -->
+  <div class="mb-4 text-center text-md-start">
+    <h3 class="fw-bold text-dark mb-1">✍️ Manajemen Bank Soal</h3>
+    <p class="text-secondary">Tambah, atur, dan hapus soal ujian untuk setiap mata pelajaran.</p>
+  </div>
+
   <div class="row g-4">
+    <!-- PANEL KIRI: INPUT SOAL -->
     <div class="col-lg-7">
-      <div class="card card-custom p-4">
-        <h4 class="fw-bold mb-3 text-primary">➕ Tambah Soal Baru</h4>
+      <div class="card card-custom p-4 p-md-5">
+        <h4 class="fw-bold mb-4 text-primary d-flex align-items-center gap-2">
+          ➕ Form Tambah Soal Baru
+        </h4>
         <form id="formInputSoal" onsubmit="simpanSoal(event)">
           
-          <div class="mb-3">
-            <label for="selectMapel" class="form-label fw-bold">Mata Pelajaran</label>
-            <select id="selectMapel" class="form-select" onchange="loadDaftarSoal(this.value)" required>
-              <option value="">-- Memuat Mapel --</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label for="selectTipe" class="form-label fw-bold">Tipe Soal TKA</label>
-            <select id="selectTipe" class="form-select" onchange="renderFormOpsi()" required>
-              <option value="PG_SEDERHANA">Pilihan Ganda Sederhana (1 Jawaban Benar)</option>
-              <option value="PGK_MCMA">PGK MCMA (Pilih >1 Jawaban Benar)</option>
-              <option value="PGK_KATEGORI">PGK Kategori (Pernyataan Benar / Salah)</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label for="txtPertanyaan" class="form-label fw-bold">Pokok Pertanyaan / Soal</label>
-            <textarea id="txtPertanyaan" class="form-control" rows="3" placeholder="Tuliskan pertanyaan soal di sini..." required></textarea>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="selectMapel" class="form-label fw-bold small">📚 Mata Pelajaran</label>
+              <select id="selectMapel" class="form-select bg-light" onchange="loadDaftarSoal(this.value)" required>
+                <option value="">-- Memuat Mapel --</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="selectTipe" class="form-label fw-bold small">⚙️ Tipe Soal</label>
+              <select id="selectTipe" class="form-select bg-light" onchange="renderFormOpsi()" required>
+                <option value="PG_SEDERHANA">Pilihan Ganda (1 Jawaban Benar)</option>
+                <option value="PGK_MCMA">PG Kompleks (Lebih dari 1 Jawaban)</option>
+                <option value="PGK_KATEGORI">PGK Kategori (Benar / Salah)</option>
+              </select>
+            </div>
           </div>
 
           <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="form-label fw-bold mb-0">Opsi Jawaban &amp; Kunci Jawaban</label>
-              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="tambahBarisOpsi()">➕ Tambah Baris Opsi</button>
-            </div>
-            <div id="containerFormOpsi" class="p-3 bg-light rounded border"></div>
+            <label for="txtPertanyaan" class="form-label fw-bold small">📝 Pokok Pertanyaan / Soal</label>
+            <textarea id="txtPertanyaan" class="form-control" rows="4" placeholder="Tuliskan pertanyaan soal dengan jelas di sini..." required></textarea>
           </div>
 
-          <button type="submit" id="btnSimpan" class="btn btn-success btn-lg w-100 fw-bold">💾 Simpan Soal ke Spreadsheet</button>
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+              <label class="form-label fw-bold small mb-0">🎯 Opsi &amp; Kunci Jawaban</label>
+              <button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3" onclick="tambahBarisOpsi()">
+                ➕ Tambah Opsi
+              </button>
+            </div>
+            <!-- Container Opsi -->
+            <div id="containerFormOpsi" class="opsi-container shadow-sm"></div>
+          </div>
+
+          <button type="submit" id="btnSimpan" class="btn btn-simpan btn-lg w-100 fw-bold py-3 mt-2 shadow-sm">
+            💾 Simpan Soal ke Database
+          </button>
         </form>
       </div>
     </div>
 
+    <!-- PANEL KANAN: DAFTAR SOAL -->
     <div class="col-lg-5">
-      <div class="card card-custom p-4">
-        <h4 class="fw-bold mb-3">📋 Soal Terdaftar</h4>
-        <div id="containerListSoal" style="max-height: 650px; overflow-y: auto;">
-          <div class="text-muted text-center py-4">Pilih Mata Pelajaran untuk melihat daftar soal.</div>
+      <div class="card card-custom p-4 p-md-5 h-100">
+        <h4 class="fw-bold mb-4 text-dark d-flex align-items-center gap-2">
+          📋 Soal Terdaftar
+        </h4>
+        <div id="containerListSoal" class="list-soal-wrapper">
+          <div class="text-center py-5 text-muted">
+            <div class="fs-1 mb-2">📂</div>
+            <p class="fw-semibold">Pilih Mata Pelajaran di samping<br>untuk melihat daftar soal.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -130,15 +249,19 @@
   }
 
   function createOpsiRowPG(index, inputType) {
-    const labelBadge = String.fromCharCode(65 + index);
+    const labelBadge = String.fromCharCode(65 + index); // A, B, C...
     return `
-      <div class="row g-2 align-items-center mb-2 opsi-item">
-        <div class="col-auto"><span class="badge bg-secondary">${labelBadge}</span></div>
-        <div class="col"><input type="text" class="form-control txt-opsi" placeholder="Tulis teks opsi ${labelBadge}..." required></div>
+      <div class="row g-2 align-items-center mb-3 opsi-item">
+        <div class="col-auto">
+          <div class="badge-opsi text-white shadow-sm">${labelBadge}</div>
+        </div>
+        <div class="col">
+          <input type="text" class="form-control txt-opsi bg-light border-0" placeholder="Tulis teks opsi ${labelBadge}..." required>
+        </div>
         <div class="col-auto text-center" style="min-width: 90px;">
           <div class="form-check form-check-inline me-0">
-            <input class="form-check-input chk-kunci" type="${inputType}" name="kunciChoice" id="kunci_${index}">
-            <label class="form-check-label small" for="kunci_${index}">Kunci</label>
+            <input class="form-check-input chk-kunci border-secondary" type="${inputType}" name="kunciChoice" id="kunci_${index}">
+            <label class="form-check-label fw-bold text-success small" for="kunci_${index}">Kunci</label>
           </div>
         </div>
       </div>`;
@@ -146,12 +269,17 @@
 
   function createOpsiRowKategori(index) {
     return `
-      <div class="row g-2 align-items-center mb-2 opsi-item">
-        <div class="col"><input type="text" class="form-control txt-opsi" placeholder="Tulis pernyataan ${index + 1}..." required></div>
+      <div class="row g-2 align-items-center mb-3 opsi-item">
         <div class="col-auto">
-          <select class="form-select select-kunci-kat" style="width: 110px;">
-            <option value="Benar">Benar</option>
-            <option value="Salah">Salah</option>
+          <div class="badge-opsi text-white shadow-sm">${index + 1}</div>
+        </div>
+        <div class="col">
+          <input type="text" class="form-control txt-opsi bg-light border-0" placeholder="Tulis pernyataan ${index + 1}..." required>
+        </div>
+        <div class="col-auto">
+          <select class="form-select select-kunci-kat border-secondary fw-bold" style="width: 110px;">
+            <option value="Benar">✅ Benar</option>
+            <option value="Salah">❌ Salah</option>
           </select>
         </div>
       </div>`;
@@ -205,6 +333,8 @@
         const txt = item.querySelector('.txt-opsi').value.trim();
         if (txt) {
           arrayOpsi.push(txt);
+          // Mengambil value (Benar/Salah) menghilangkan icon emoji jika diperlukan, 
+          // namun value form select sudah di-set value murninya ("Benar" / "Salah")
           kunciJawaban[txt] = item.querySelector('.select-kunci-kat').value;
         }
       });
@@ -212,7 +342,7 @@
 
     const btnSimpan = document.getElementById('btnSimpan');
     btnSimpan.disabled = true;
-    btnSimpan.innerText = 'Menyimpan...';
+    btnSimpan.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
 
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
@@ -228,7 +358,7 @@
     .then(res => res.json())
     .then(data => {
       btnSimpan.disabled = false;
-      btnSimpan.innerText = '💾 Simpan Soal ke Spreadsheet';
+      btnSimpan.innerHTML = '💾 Simpan Soal ke Database';
 
       if (data.status === 'success') {
         alert("Berhasil menyimpan soal!");
@@ -241,7 +371,7 @@
     })
     .catch(() => {
       btnSimpan.disabled = false;
-      btnSimpan.innerText = '💾 Simpan Soal ke Spreadsheet';
+      btnSimpan.innerHTML = '💾 Simpan Soal ke Database';
       alert("Terjadi kesalahan koneksi!");
     });
   }
@@ -249,11 +379,19 @@
   function loadDaftarSoal(idMapel) {
     const container = document.getElementById('containerListSoal');
     if (!idMapel) {
-      container.innerHTML = '<div class="text-muted text-center py-4">Pilih Mata Pelajaran untuk melihat daftar soal.</div>';
+      container.innerHTML = `
+        <div class="text-center py-5 text-muted">
+          <div class="fs-1 mb-2">📂</div>
+          <p class="fw-semibold">Pilih Mata Pelajaran di samping<br>untuk melihat daftar soal.</p>
+        </div>`;
       return;
     }
 
-    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div> Memuat...</div>';
+    container.innerHTML = `
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary mb-2"></div>
+        <div class="text-muted fw-semibold">Memuat soal...</div>
+      </div>`;
 
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
@@ -265,30 +403,34 @@
         container.innerHTML = '';
         data.soal.forEach((s, i) => {
           container.innerHTML += `
-            <div class="card p-3 mb-2 border-start border-4 border-primary shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="fw-bold">#${i+1} (${s.idSoal})</span>
-                <div class="d-flex align-items-center gap-1">
-                  <span class="badge bg-info text-dark badge-tipe me-1">${s.tipe}</span>
-                  <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="hapusSoal('${s.idSoal}')" title="Hapus Soal">🗑️ Hapus</button>
+            <div class="card p-3 mb-3 soal-card">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-primary">#${i+1} <small class="text-muted fw-normal">(${s.idSoal})</small></span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light border border-info text-info badge-tipe">${s.tipe}</span>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="hapusSoal('${s.idSoal}')" title="Hapus Soal">🗑️</button>
                 </div>
               </div>
-              <p class="mb-1 text-dark">${s.pertanyaan}</p>
-              <small class="text-muted">Jumlah Opsi/Pernyataan: ${s.opsi.length}</small>
+              <p class="mb-2 text-dark fs-6">${s.pertanyaan}</p>
+              <small class="text-secondary fw-semibold">➤ Jumlah Opsi: ${s.opsi.length}</small>
             </div>`;
         });
       } else {
-        container.innerHTML = '<div class="alert alert-warning text-center">Belum ada soal untuk mata pelajaran ini.</div>';
+        container.innerHTML = `
+          <div class="text-center py-5 text-muted bg-light rounded-3 border">
+            <div class="fs-2 mb-2">📄</div>
+            <p class="mb-0 fw-semibold">Belum ada soal untuk mata pelajaran ini.</p>
+          </div>`;
       }
     })
     .catch(err => {
       console.error(err);
-      container.innerHTML = '<div class="alert alert-danger text-center">Gagal memuat soal.</div>';
+      container.innerHTML = '<div class="alert alert-danger text-center fw-bold mt-3">Gagal memuat soal. Cek koneksi Anda.</div>';
     });
   }
 
   function hapusSoal(idSoal) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus soal dengan ID (${idSoal}) ini?`)) return;
+    if (!confirm(`Apakah Anda yakin ingin menghapus soal ini?`)) return;
 
     const idMapel = document.getElementById('selectMapel').value;
 
@@ -302,7 +444,6 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        alert("Soal berhasil dihapus!");
         loadDaftarSoal(idMapel);
       } else {
         alert("Gagal menghapus soal: " + (data.message || "Terjadi kesalahan."));
