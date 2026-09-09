@@ -6,7 +6,6 @@
   <title>Dashboard Guru - Portal Akademik</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    /* Menggunakan font yang lebih ramah dan modern */
     @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
     
     body { 
@@ -17,26 +16,21 @@
       min-height: 100vh;
     }
     
-    /* Navbar Gradient */
     .navbar-custom { 
       background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
-    /* Hero / Welcome Section */
     .welcome-card {
       background: #ffffff;
       border-radius: 20px;
       padding: 40px 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
       margin-top: 40px;
       margin-bottom: 30px;
-      position: relative;
-      overflow: hidden;
       border: 1px solid #edf2f9;
     }
 
-    /* Panduan Box */
     .guide-box {
       background: linear-gradient(to right, #ffffff, #f1f9ff);
       border-left: 6px solid #4facfe;
@@ -46,57 +40,52 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
     .guide-box ul { margin-bottom: 0; padding-left: 20px; }
-    .guide-box li { margin-bottom: 10px; color: #444; font-size: 0.95rem; }
+    .guide-box li { margin-bottom: 10px; color: #555; font-size: 0.95rem; }
 
-    /* Card Menu Grid */
     .card-menu { 
       border-radius: 20px; 
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
       text-align: center; 
       text-decoration: none; 
       color: #fff; 
       padding: 40px 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      transition: all 0.3s ease; 
       display: flex;
       flex-direction: column;
       height: 100%;
       position: relative;
       overflow: hidden;
-      z-index: 1;
     }
     
     .card-menu:hover { 
-      transform: translateY(-10px); 
-      box-shadow: 0 15px 30px rgba(0,0,0,0.15); 
+      transform: translateY(-8px); 
+      box-shadow: 0 15px 30px rgba(0,0,0,0.12); 
       color: #fff;
     }
 
-    /* Icon Wrapper with Glassmorphism */
     .icon-wrapper {
       background: rgba(255, 255, 255, 0.25);
-      width: 85px;
-      height: 85px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 20px auto;
-      font-size: 3rem;
+      font-size: 2.5rem;
       backdrop-filter: blur(5px);
-      border: 2px solid rgba(255, 255, 255, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.4);
       transition: transform 0.3s ease;
     }
-    .card-menu:hover .icon-wrapper {
-      transform: scale(1.1);
-    }
+    .card-menu:hover .icon-wrapper { transform: scale(1.1); }
     
-    /* Gradients untuk masing-masing kartu */
+    /* Gradients Warna Lembut / Ringan */
     .tugas-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
     .soal-card { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .jadwal-card { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); }
     .ujian-card { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
-    .rekap-card { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); } /* Kartu Baru */
+    .rekap-card { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); }
 
-    /* Footer */
     .footer {
       margin-top: auto;
       text-align: center;
@@ -124,82 +113,129 @@
 <div class="container flex-grow-1">
   <div class="welcome-card text-center">
     <h2 class="fw-bold text-dark mb-3">Selamat Datang di Dashboard Guru</h2>
-    <p class="text-secondary fs-5 mb-0">Kelola tugas, susun materi, pantau ujian, dan rekap nilai siswa Anda dengan mudah dalam satu tempat.</p>
-  </div>
+    <p class="text-secondary fs-5 mb-0Berikut adalah kode untuk kedua halaman tersebut. Saya menggunakan **HTML murni dengan CSS bawaan (embedded)** agar sangat ringan, cepat dimuat, dan tidak bergantung pada library eksternal (seperti Bootstrap atau Tailwind). Tema yang digunakan adalah *Light Theme* (bersih, minimalis, dengan aksen biru lembut).
 
-  <div class="guide-box">
-    <h5 class="fw-bold mb-3 text-dark">💡 Petunjuk Penggunaan Panel:</h5>
-    <ul>
-      <li><strong>Tambah Tugas / Materi:</strong> Distribusikan materi (Link Google Drive/YouTube) dan tugas harian. Anda dapat menentukan batas waktu pengumpulan.</li>
-      <li><strong>Input Soal Ujian:</strong> Susun bank soal (Pilihan Ganda Biasa, Kompleks, atau Benar/Salah) yang akan digunakan saat ujian berlangsung.</li>
-      <li><strong>Ruang Ujian:</strong> Lihat dan ujicoba tampilan aplikasi dari sudut pandang siswa sebelum ujian sesungguhnya dimulai.</li>
-      <li><strong>Rekap Nilai:</strong> Pantau dan unduh hasil evaluasi belajar siswa (Tugas & Ujian) secara praktis.</li>
-    </ul>
-  </div>
+### 1. File: `dashboard-guru.html`
+Halaman ini berisi ringkasan data, jadwal hari ini, dan tombol akses cepat untuk mengatur jadwal.
 
-  <div class="row g-4 mb-5">
-    
-    <div class="col-md-6 col-lg-3">
-      <a href="add-tugas.html" class="card-menu tugas-card">
-        <div class="icon-wrapper">📚</div>
-        <h4 class="fw-bold">Tambah Tugas</h4>
-        <p class="text-white-50 mt-2 mb-0">Bagikan materi, modul, atau tugas harian ke kelas.</p>
-      </a>
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Guru</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); }
+        
+        /* Navbar */
+        header { background-color: var(--card-bg); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.2rem; color: var(--primary); }
+        nav a { text-decoration: none; color: var(--text-muted); margin-left: 1.5rem; font-weight: 500; transition: color 0.3s; }
+        nav a:hover, nav a.active { color: var(--primary); }
+
+        /* Container */
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .welcome { margin-bottom: 2rem; }
+        .welcome h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .welcome p { color: var(--text-muted); }
+
+        /* Grid Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .card h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .card .value { font-size: 1.8rem; font-weight: bold; color: var(--text-main); }
+        
+        /* Button */
+        .btn { display: inline-block; background-color: var(--primary); color: white; padding: 0.6rem 1.2rem; text-decoration: none; border-radius: 6px; font-weight: 500; transition: background 0.3s; }
+        .btn:hover { background-color: var(--primary-hover); }
+
+        /* Table */
+        .table-container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+        .table-container h3 { margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; }
+        tr:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Portal Guru</h1>
+        <nav>
+            <a href="dashboard-guru.html" class="active">Dashboard</a>
+            <a href="set-jadwal.html">Set Jadwal</a>
+            <a href="#">Data Nilai</a>
+            <a href="#">Profil</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Selamat Datang, Bapak/Ibu Guru!</h2>
+            <p>Berikut adalah ringkasan aktivitas dan jadwal mengajar Anda hari ini.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Total Jam Mengajar</h3>
+                <div class="value">24 Jam</div>
+            </div>
+            <div class="card">
+                <h3>Tugas Belum Dinilai</h3>
+                <div class="value">3 Kelas</div>
+            </div>
+            <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+                <p style="margin-bottom: 10px; color: var(--text-muted);">Kelola jadwal mengajar baru</p>
+                <a href="set-jadwal.html" class="btn">+ Buat Jadwal</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>Jadwal Hari Ini</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Kelas</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Ruang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>07:30 - 09:00</td>
+                        <td>X MIPA 1</td>
+                        <td>Matematika Lanjut</td>
+                        <td>R. 101</td>
+                    </tr>
+                    <tr>
+                        <td>09:15 - 10:45</td>
+                        <td>XI IPS 2</td>
+                        <td>Matematika Dasar</td>
+                        <td>R. 203</td>
+                    </tr>
+                    <tr>
+                        <td>11:00 - 12:30</td>
+                        <td>XII MIPA 3</td>
+                        <td>Matematika Lanjut</td>
+                        <td>R. 105</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="col-md-6 col-lg-3">
-      <a href="input-soal.html" class="card-menu soal-card">
-        <div class="icon-wrapper">✍️</div>
-        <h4 class="fw-bold">Input Soal</h4>
-        <p class="text-white-50 mt-2 mb-0">Susun soal ujian (PG, Kompleks) ke database.</p>
-      </a>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <a href="ujian.html" class="card-menu ujian-card">
-        <div class="icon-wrapper">🚀</div>
-        <h4 class="fw-bold">Ruang Ujian</h4>
-        <p class="text-white-50 mt-2 mb-0">Simulasi pratinjau tampilan ujian dari sisi siswa.</p>
-      </a>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <a href="rekap-nilai.html" class="card-menu rekap-card">
-        <div class="icon-wrapper">📊</div>
-        <h4 class="fw-bold">Rekap Nilai</h4>
-        <p class="text-white-50 mt-2 mb-0">Pantau dan unduh hasil evaluasi belajar siswa.</p>
-      </a>
-    </div>
-
-  </div>
-</div>
-
-<div class="footer">
-  <div class="container">
-    &copy; 2026 Portal Akademik. Develop by <span>HerryPermana Kang_ngopi404</span>.
-  </div>
-</div>
-
-<script src="js/config.js"></script>
-<script src="js/auth-nav.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Menampilkan Nama Guru di Navbar
-  document.addEventListener("DOMContentLoaded", function() {
-    const session = JSON.parse(localStorage.getItem('userSession'));
-    if (session && session.role === 'guru') {
-      document.getElementById('namaGuru').innerText = "Halo, " + session.nama + "!";
-    } else {
-      // Jika yang login bukan guru, tendang kembali ke halaman login
-      alert("Akses ditolak! Halaman ini khusus Guru.");
-      window.location.href = "index.html";
-    }
-  });
-
-  function logout() {
-    localStorage.removeItem('userSession');
-    window.location.href = 'index.html';
-  }
-</script>
 </body>
 </html>
