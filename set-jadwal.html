@@ -120,7 +120,7 @@
                 role: session.role // [PERBAIKAN]: Mengganti kelas: "guru" menjadi role agar sesuai standar otentikasi backend
             };
 
-            fetch(GAS_URL, {
+            fetch(CONFIG.GAS_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "text/plain;charset=utf-8",
@@ -195,7 +195,7 @@
             btn.style.display = "none";
             loader.style.display = "block";
 
-            fetch(GAS_URL, {
+            fetch(CONFIG.GAS_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "text/plain;charset=utf-8",
