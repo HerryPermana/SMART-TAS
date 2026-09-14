@@ -1,230 +1,459 @@
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Set Jadwal Ujian</title>
+
     <style>
+
         :root {
+
             --bg-color: #f8fafc;
+
             --card-bg: #ffffff;
+
             --text-main: #1e293b;
+
             --text-muted: #64748b;
+
             --primary: #3b82f6;
+
             --primary-hover: #2563eb;
+
             --border: #e2e8f0;
+
             --input-focus: #bfdbfe;
+
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
         body { background-color: var(--bg-color); color: var(--text-main); }
+
         
+
         /* Navbar */
+
         header { background-color: var(--card-bg); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
         header h1 { font-size: 1.2rem; color: var(--primary); }
+
         nav a { text-decoration: none; color: var(--text-muted); margin-left: 1.5rem; font-weight: 500; transition: color 0.3s; }
+
         nav a:hover, nav a.active { color: var(--primary); }
 
+
+
         /* Container */
+
         .container { max-width: 600px; margin: 3rem auto; padding: 0 1rem; }
+
         
+
         /* Form Card */
+
         .card { background-color: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+
         .card h2 { margin-bottom: 0.5rem; font-size: 1.5rem; }
+
         .card p { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
 
+
+
         /* Form Group */
+
         .form-group { margin-bottom: 1.2rem; }
+
         .form-group label { display: block; font-weight: 500; margin-bottom: 0.4rem; color: var(--text-main); font-size: 0.9rem; }
+
         .form-group input, .form-group select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; outline: none; transition: border 0.3s, box-shadow 0.3s; }
+
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--input-focus); }
+
         
+
         .form-row { display: flex; gap: 1rem; }
+
         .form-row .form-group { flex: 1; }
 
+
+
         /* Button */
+
         .btn { display: block; width: 100%; background-color: var(--primary); color: white; padding: 0.8rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 1rem; }
+
         .btn:hover { background-color: var(--primary-hover); }
+
         .btn-secondary { background-color: transparent; color: var(--text-muted); text-align: center; display: block; margin-top: 1rem; text-decoration: none; font-size: 0.9rem; }
+
         .btn-secondary:hover { color: var(--text-main); }
+
         
+
         /* Loader */
+
         #loader { display: none; text-align: center; margin-top: 10px; color: var(--primary); font-weight: bold; }
+
     </style>
+
 </head>
+
 <body>
 
+
+
     <header>
+
         <h1>Portal Guru</h1>
+
         <nav>
+
             <a href="dashboard-guru.html">Dashboard</a>
+
             <a href="set-jadwal.html" class="active">Set Jadwal</a>
+
         </nav>
+
     </header>
 
+
+
     <div class="container">
+
         <div class="card">
+
             <h2>Set Jadwal Ujian</h2>
+
             <p>Pilih mata pelajaran dan tentukan rentang waktu ujian akan aktif.</p>
 
+
+
             <form id="formJadwal">
+
                 
-                <div class="form-group">
-                    <label for="mapel">Mata Pelajaran (Ujian)</label>
-                    <select id="mapel" name="mapel" required onchange="updateKelas()">
-                        <option value="">-- Memuat Mapel... --</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
-                    <label for="kelas">Kelas Sasaran</label>
-                    <input type="text" id="kelas" name="kelas" readonly placeholder="Kelas akan terisi otomatis" required>
+
+                    <label for="mapel">Mata Pelajaran (Ujian)</label>
+
+                    <select id="mapel" name="mapel" required onchange="updateKelas()">
+
+                        <option value="">-- Memuat Mapel... --</option>
+
+                    </select>
+
                 </div>
+
+
+
+                <div class="form-group">
+
+                    <label for="kelas">Kelas Sasaran</label>
+
+                    <input type="text" id="kelas" name="kelas" readonly placeholder="Kelas akan terisi otomatis" required>
+
+                </div>
+
+
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label for="waktuMulai">Waktu Mulai</label>
+
                         <input type="datetime-local" id="waktuMulai" required>
+
                     </div>
+
                     <div class="form-group">
+
                         <label for="waktuSelesai">Waktu Selesai</label>
+
                         <input type="datetime-local" id="waktuSelesai" required>
+
                     </div>
+
                 </div>
 
+
+
                 <button type="submit" class="btn" id="btnSubmit">Simpan Jadwal Ujian</button>
+
                 <div id="loader">Menyimpan data...</div>
+
                 <a href="dashboard-guru.html" class="btn-secondary">Kembali ke Dashboard</a>
+
             </form>
+
         </div>
+
     </div>
 
+
+
     <!-- Script Koneksi ke Apps Script -->
+
     <script src="js/config.js"></script>
+
     <script>
+
         let mapelList = [];
+
         const session = JSON.parse(localStorage.getItem('userSession'));
 
+
+
         // Cek login
+
         if (!session || session.role !== 'guru') {
+
             alert("Harap login sebagai Guru!");
+
             window.location.href = "index.html";
+
         }
+
+
 
         document.addEventListener("DOMContentLoaded", fetchMapel);
 
+
+
         // Ambil Data Mapel & Kelas
+
         function fetchMapel() {
+
             const payload = {
+
                 action: "getMapel",
+
                 idUser: session.id,
+
                 role: session.role // [PERBAIKAN]: Mengganti kelas: "guru" menjadi role agar sesuai standar otentikasi backend
+
             };
 
+
+
             fetch(CONFIG.GAS_URL, {
+
                 method: "POST",
+
                 headers: {
+
                     "Content-Type": "text/plain;charset=utf-8",
+
                 },
+
                 redirect: "follow",
+
                 body: JSON.stringify(payload)
+
             })
+
             .then(response => {
+
                 if (!response.ok) throw new Error("Gagal terhubung ke server (Network/CORS error).");
+
                 return response.json();
+
             })
+
             .then(data => {
+
                 const mapelSelect = document.getElementById("mapel");
+
                 
+
                 if (data.status === "success") {
+
                     mapelList = data.mapel;
+
                     mapelSelect.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>';
+
                     
+
                     if (mapelList.length === 0) {
+
                         mapelSelect.innerHTML = '<option value="">-- Tidak ada mapel untuk Anda --</option>';
+
                         return;
+
                     }
 
+
+
                     mapelList.forEach(m => {
+
                         let opt = document.createElement("option");
+
                         opt.value = m.idMapel;
+
                         opt.dataset.kelas = m.kelas;
+
                         opt.dataset.nama = m.namaMapel;
+
                         opt.textContent = m.namaMapel + " (" + m.kelas + ")";
+
                         mapelSelect.appendChild(opt);
+
                     });
+
                 } else {
+
                     mapelSelect.innerHTML = '<option value="">-- Error Memuat Data --</option>';
+
                     alert("Error dari Server: " + data.message);
+
                 }
+
             })
+
             .catch(error => {
+
                 document.getElementById("mapel").innerHTML = '<option value="">-- Gagal Memuat --</option>';
+
                 alert("Gagal memuat Mapel. Detail: " + error.message);
+
             });
+
         }
+
+
 
         // Update Kelas Otomatis
+
         function updateKelas() {
+
             const selectMapel = document.getElementById("mapel");
+
             const selectedOption = selectMapel.options[selectMapel.selectedIndex];
+
             document.getElementById("kelas").value = selectedOption.dataset.kelas || "";
+
         }
 
+
+
         // Submit Form
+
         document.getElementById("formJadwal").addEventListener("submit", function(e) {
+
             e.preventDefault();
+
             
+
             const btn = document.getElementById("btnSubmit");
+
             const loader = document.getElementById("loader");
+
             const mapelEl = document.getElementById("mapel");
+
             const selectedOpt = mapelEl.options[mapelEl.selectedIndex];
 
+
+
             // [PERBAIKAN]: Mengubah format T menjadi spasi agar ramah Google Sheets (contoh: 2023-10-25 14:30)
+
             const formatWaktu = (waktu) => waktu.replace('T', ' ');
 
+
+
             const payload = {
+
                 action: "addJadwalUjian",
+
                 idMapel: selectedOpt.value, // [PERBAIKAN]: Menambahkan idMapel yang sebelumnya hilang
+
                 idGuru: session.id,         // [PERBAIKAN]: Menambahkan idGuru pencipta jadwal
+
                 kelas: document.getElementById("kelas").value,
+
                 judulUjian: selectedOpt.dataset.nama,
+
                 waktuMulai: formatWaktu(document.getElementById("waktuMulai").value), // [PERBAIKAN]
+
                 waktuSelesai: formatWaktu(document.getElementById("waktuSelesai").value) // [PERBAIKAN]
+
             };
 
+
+
             btn.style.display = "none";
+
             loader.style.display = "block";
 
+
+
             fetch(CONFIG.GAS_URL, {
+
                 method: "POST",
+
                 headers: {
+
                     "Content-Type": "text/plain;charset=utf-8",
+
                 },
+
                 redirect: "follow",
+
                 body: JSON.stringify(payload)
+
             })
+
             .then(res => {
+
                 if (!res.ok) throw new Error("Gagal terhubung ke server.");
+
                 return res.json();
+
             })
+
             .then(data => {
+
                 if (data.status === "success") {
+
                     alert("Jadwal Ujian berhasil disimpan!");
+
                     document.getElementById("formJadwal").reset();
+
                     // Reset ulang dropdown kelas setelah sukses submit
+
                     document.getElementById("kelas").value = ""; 
+
                 } else {
+
                     alert("Gagal menyimpan: " + data.message);
+
                 }
+
             })
+
             .catch(err => {
+
                 alert("Terjadi kesalahan sistem: " + err.message);
+
             })
+
             .finally(() => {
+
                 btn.style.display = "block";
+
                 loader.style.display = "none";
+
             });
+
         });
+
     </script>
+
 </body>
+
 </html>
