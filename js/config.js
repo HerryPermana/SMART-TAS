@@ -1,3 +1,3 @@
 const CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbwAqZSFWKr552KXFBxbJANwFEUuHXA_PDkBQggT0U6pt9rf1H4R73N9hoSw4yFmw10/exec'
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxGLYDF4BdKv7INGQxUD11lXnqyl0Nvru2XapynQioeH8OKTyQ87m7MxdAAkK_cseo/exec'
 };
