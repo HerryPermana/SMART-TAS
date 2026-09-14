@@ -117,7 +117,7 @@
             const payload = {
                 action: "getMapel",
                 idUser: session.id,
-                kelas: "guru"
+                role: session.role // [PERBAIKAN]: Mengganti kelas: "guru" menjadi role agar sesuai standar otentikasi backend
             };
 
             fetch(SCRIPT_URL, {
@@ -179,12 +179,17 @@
             const mapelEl = document.getElementById("mapel");
             const selectedOpt = mapelEl.options[mapelEl.selectedIndex];
 
+            // [PERBAIKAN]: Mengubah format T menjadi spasi agar ramah Google Sheets (contoh: 2023-10-25 14:30)
+            const formatWaktu = (waktu) => waktu.replace('T', ' ');
+
             const payload = {
                 action: "addJadwalUjian",
+                idMapel: selectedOpt.value, // [PERBAIKAN]: Menambahkan idMapel yang sebelumnya hilang
+                idGuru: session.id,         // [PERBAIKAN]: Menambahkan idGuru pencipta jadwal
                 kelas: document.getElementById("kelas").value,
                 judulUjian: selectedOpt.dataset.nama,
-                waktuMulai: document.getElementById("waktuMulai").value,
-                waktuSelesai: document.getElementById("waktuSelesai").value
+                waktuMulai: formatWaktu(document.getElementById("waktuMulai").value), // [PERBAIKAN]
+                waktuSelesai: formatWaktu(document.getElementById("waktuSelesai").value) // [PERBAIKAN]
             };
 
             btn.style.display = "none";
@@ -206,6 +211,8 @@
                 if (data.status === "success") {
                     alert("Jadwal Ujian berhasil disimpan!");
                     document.getElementById("formJadwal").reset();
+                    // Reset ulang dropdown kelas setelah sukses submit
+                    document.getElementById("kelas").value = ""; 
                 } else {
                     alert("Gagal menyimpan: " + data.message);
                 }
