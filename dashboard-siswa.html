@@ -158,7 +158,6 @@
       document.getElementById('namaSiswa').innerText = "Halo, " + session.nama + "!";
       document.getElementById('infoKelas').innerText = "Anda login sebagai siswa Kelas " + session.kelas + ". Berikut adalah tugas dan ujian Anda.";
       
-      // PERBAIKAN 1: Panggil kedua fungsi ini agar berjalan bersamaan saat web dimuat
       loadTugas();
       loadJadwalUjian(); 
     } else {
@@ -183,11 +182,9 @@
         container.innerHTML = '';
         data.tugas.forEach(item => {
           const hasLink = item.linkMateri && item.linkMateri !== '-' && item.linkMateri.trim().startsWith('http');
-          
           const linkHtml = hasLink 
             ? `<a href="${item.linkMateri}" target="_blank" class="btn btn-sm btn-primary fw-bold px-3">🔗 Buka Materi / Link</a>` 
             : `<span class="text-muted fst-italic" style="font-size: 0.85rem;">Tidak ada lampiran</span>`;
-
           const deadlineText = item.deadline ? item.deadline.replace('T', ' ') : '-';
 
           container.innerHTML += `
@@ -214,6 +211,32 @@
     });
   }
 
+  // FUNGSI BARU: Konverter Tanggal Anti-Gagal untuk Semua Browser & Format Sheets
+  function parseSafeDate(dateStr) {
+    if (!dateStr) return 0;
+    
+    // 1. Coba parse menggunakan standar bawaan browser
+    let time = new Date(dateStr).getTime();
+    if (!isNaN(time)) return time;
+
+    // 2. Jika gagal, ubah format YYYY-MM-DD HH:MM menjadi format baku ISO dengan 'T' dan detik
+    let cleanStr = dateStr.trim();
+    if (cleanStr.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
+      cleanStr = cleanStr.replace(' ', 'T');
+      if (cleanStr.length === 16) cleanStr += ":00"; // Tambah detik jika tidak ada
+      time = new Date(cleanStr).getTime();
+      if (!isNaN(time)) return time;
+    }
+
+    // 3. Fallback paling brutal: Pisahkan angka secara paksa jika format masih bandel
+    let p = dateStr.split(/[- :T/]/);
+    if (p.length >= 5) {
+      return new Date(p[0], p[1]-1, p[2], p[3], p[4], p[5]||0).getTime();
+    }
+    
+    return 0; // Jika semua cara gagal
+  }
+
   function loadJadwalUjian() {
     const container = document.getElementById('containerUjian');
 
@@ -227,30 +250,28 @@
     })
     .then(res => res.json())
     .then(data => {
-      // PERBAIKAN 2 & 3: Menggunakan data.data (array) dan me-looping isinya
       if (data.status === 'success' && data.data && data.data.length > 0) {
-        container.innerHTML = ''; // Kosongkan state "Memuat..."
+        container.innerHTML = ''; 
         
         data.data.forEach(ujian => {
           const waktuSekarang = new Date().getTime();
           
-          // Mengembalikan format spasi menjadi 'T' agar bisa di-parsing oleh semua browser (Safari/Mobile)
-// KODE PENGGANTI YANG LEBIH AMAN
-function parseSafeDate(dateStr) {
-  // Coba konversi langsung
-  let time = new Date(dateStr).getTime();
-  // Jika gagal (NaN), paksa penambahan 'T' untuk plain text
-  if (isNaN(time)) {
-    time = new Date(dateStr.replace(' ', 'T')).getTime();
-  }
-  return time;
-}
-
-const waktuMulai = parseSafeDate(ujian.waktuMulai);
-const waktuSelesai = parseSafeDate(ujian.waktuSelesai);
-
-          // Judul Ujian menggunakan field dari backend (judulUjian)
+          // Menggunakan fungsi anti-gagal yang baru dibuat
+          const waktuMulai = parseSafeDate(ujian.waktuMulai);
+          const waktuSelesai = parseSafeDate(ujian.waktuSelesai);
+          
           const judul = ujian.judulUjian || "Ujian";
+
+          // Cek apakah tanggal gagal terbaca sepenuhnya
+          if (waktuMulai === 0 || waktuSelesai === 0) {
+             container.innerHTML += `
+              <div class="card-menu card-ujian-disabled mb-3 border-danger">
+                <div class="card-icon">⚠️</div>
+                <h5 class="fw-bold text-danger">Format Tanggal Error</h5>
+                <p class="text-muted mt-2 mb-0" style="font-size: 0.8rem;">Mohon laporkan ke Guru untuk memperbaiki format tanggal di Excel.</p>
+              </div>`;
+             return; // Lanjut ke jadwal berikutnya
+          }
 
           if (waktuSekarang < waktuMulai) {
             // Ujian belum mulai
@@ -258,7 +279,7 @@ const waktuSelesai = parseSafeDate(ujian.waktuSelesai);
               <div class="card-menu card-ujian-disabled mb-3">
                 <div class="card-icon">⏳</div>
                 <h5 class="fw-bold text-dark">${judul}</h5>
-                <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">Ujian dimulai pada:<br><b>${ujian.waktuMulai}</b></p>
+                <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">Ujian belum dibuka.<br>Dibuka pada: <b>${ujian.waktuMulai}</b></p>
               </div>
             `;
           } else if (waktuSekarang >= waktuMulai && waktuSekarang <= waktuSelesai) {
