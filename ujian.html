@@ -121,16 +121,17 @@
     window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
   }
 
-  function loadDaftarMapel() {
-    const select = document.getElementById('selectMapel');
-    fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ 
-        action: 'getMapel',
-        kelas: session.kelas,
-        idUser: session.id
-      })
+function loadDaftarMapel() {
+  const select = document.getElementById('selectMapel');
+  fetch(CONFIG.GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify({ 
+      action: 'getMapel',
+      kelas: session.kelas,
+      idUser: session.id,
+      role: session.role
     })
+  })
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
