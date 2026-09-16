@@ -93,7 +93,7 @@
     /* Gradients untuk masing-masing kartu */
     .tugas-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
     .soal-card { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-    .jadwal-card { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); } /* Kartu Set Jadwal */
+    .jadwal-card { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); } 
     .ujian-card { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
     .rekap-card { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); }
 
@@ -108,6 +108,8 @@
       border-top: 1px solid #eaeaea;
     }
     .footer span { font-weight: 800; color: #4facfe; }
+    
+    .card-jadwal-item { border-radius: 12px; border: none; }
   </style>
 </head>
 <body>
@@ -137,6 +139,17 @@
       <li><strong>Ruang Ujian:</strong> Lihat dan ujicoba tampilan aplikasi dari sudut pandang siswa sebelum ujian sesungguhnya dimulai.</li>
       <li><strong>Rekap Nilai:</strong> Pantau dan unduh hasil evaluasi belajar siswa (Tugas & Ujian) secara praktis.</li>
     </ul>
+  </div>
+
+  <!-- BAGIAN JADWAL UJIAN AKTIF (TAMBAHAN BARU) -->
+  <div class="mb-5">
+    <h4 class="fw-bold text-dark mb-3">🗓️ Jadwal Ujian Terdaftar</h4>
+    <div id="containerJadwalGuru" class="row g-3">
+       <div class="col-12 text-center text-muted">
+          <div class="spinner-border spinner-border-sm text-primary mb-2"></div>
+          <div>Memuat jadwal...</div>
+       </div>
+    </div>
   </div>
 
   <!-- Row menggunakan justify-content-center dan col-lg-4 agar 5 card tampil rapi (3 di atas, 2 di bawah) -->
@@ -195,17 +208,113 @@
 <script src="js/auth-nav.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Menampilkan Nama Guru di Navbar
+  let session = null;
+
   document.addEventListener("DOMContentLoaded", function() {
-    const session = JSON.parse(localStorage.getItem('userSession'));
+    session = JSON.parse(localStorage.getItem('userSession'));
     if (session && session.role === 'guru') {
       document.getElementById('namaGuru').innerText = "Halo, " + session.nama + "!";
+      // Panggil load jadwal saat halaman selesai dimuat
+      loadJadwalUjianGuru();
     } else {
-      // Jika yang login bukan guru, tendang kembali ke halaman login
       alert("Akses ditolak! Halaman ini khusus Guru.");
       window.location.href = "index.html";
     }
   });
+
+  // Konverter Tanggal Anti-Gagal (seperti di dashboard siswa)
+  function parseSafeDate(dateStr) {
+    if (!dateStr) return 0;
+    let time = new Date(dateStr).getTime();
+    if (!isNaN(time)) return time;
+
+    let cleanStr = dateStr.trim();
+    if (cleanStr.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/)) {
+      cleanStr = cleanStr.replace(' ', 'T');
+      if (cleanStr.length === 16) cleanStr += ":00";
+      time = new Date(cleanStr).getTime();
+      if (!isNaN(time)) return time;
+    }
+
+    let p = dateStr.split(/[- :T/]/);
+    if (p.length >= 5) {
+      return new Date(p[0], p[1]-1, p[2], p[3], p[4], p[5]||0).getTime();
+    }
+    return 0; 
+  }
+
+  // Fungsi mengambil jadwal dari server (Filter untuk Guru)
+  function loadJadwalUjianGuru() {
+    const container = document.getElementById('containerJadwalGuru');
+
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        action: 'getJadwalUjian',
+        role: session.role,
+        idUser: session.id
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success' && data.data && data.data.length > 0) {
+        container.innerHTML = ''; 
+        const waktuSekarang = new Date().getTime();
+        
+        data.data.forEach(ujian => {
+          const wMulai = parseSafeDate(ujian.waktuMulai);
+          const wSelesai = parseSafeDate(ujian.waktuSelesai);
+          const judul = ujian.judulUjian || "Ujian";
+          const kelas = ujian.kelas || "-";
+          
+          let statusHtml = '';
+          let borderClass = 'border-start border-4 ';
+          
+          if (wMulai === 0 || wSelesai === 0) {
+              statusHtml = '<span class="badge bg-danger">Format Waktu Error</span>';
+              borderClass += 'border-danger';
+          } else if (waktuSekarang < wMulai) {
+              statusHtml = '<span class="badge bg-warning text-dark">Belum Mulai</span>';
+              borderClass += 'border-warning';
+          } else if (waktuSekarang >= wMulai && waktuSekarang <= wSelesai) {
+              statusHtml = '<span class="badge bg-success">Berlangsung</span>';
+              borderClass += 'border-success';
+          } else {
+              statusHtml = '<span class="badge bg-secondary">Selesai</span>';
+              borderClass += 'border-secondary';
+          }
+
+          container.innerHTML += `
+            <div class="col-md-6 col-lg-4">
+              <div class="card card-jadwal-item h-100 p-3 shadow-sm ${borderClass}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="fw-bold mb-0 text-dark">${judul}</h6>
+                  ${statusHtml}
+                </div>
+                <div class="small text-secondary">
+                  <div class="mb-1"><strong>🎓 Kelas:</strong> ${kelas}</div>
+                  <div class="mb-1"><strong>🟢 Mulai:</strong> ${ujian.waktuMulai}</div>
+                  <div class="mb-0"><strong>🔴 Selesai:</strong> ${ujian.waktuSelesai}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        container.innerHTML = `
+          <div class="col-12">
+            <div class="alert alert-light text-center border text-muted shadow-sm rounded-4 py-4">
+              <div class="fs-2 mb-2">🏖️</div>
+              Belum ada jadwal ujian yang terdaftar atau aktif.
+            </div>
+          </div>`;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = '<div class="col-12"><div class="alert alert-danger text-center shadow-sm">Gagal memuat jadwal ujian. Periksa koneksi internet Anda.</div></div>';
+    });
+  }
 
   function logout() {
     localStorage.removeItem('userSession');
