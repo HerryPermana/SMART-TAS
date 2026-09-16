@@ -82,7 +82,7 @@
     loadMapel();
   });
 
-function loadMapel() {
+  function loadMapel() {
     const select = document.getElementById('selectMapel');
 
     fetch(CONFIG.GAS_URL, {
@@ -90,7 +90,8 @@ function loadMapel() {
       body: JSON.stringify({ 
         action: 'getMapel',
         kelas: session ? session.kelas : 'guru',
-        idUser: session ? session.id : ''  // <--- Tambahkan baris ini untuk mengirim ID Guru
+        idUser: session ? session.id : '',
+        role: session ? session.role : 'guru' // <--- PERBAIKAN: Parameter role wajib ada
       })
     })
     .then(res => res.json())
@@ -141,7 +142,8 @@ function loadMapel() {
         deskripsi: deskripsi,
         linkMateri: linkMateri,
         deadline: deadline,
-        kelas: targetKelas
+        kelas: targetKelas,
+        idGuru: session ? session.id : '' // <--- PERBAIKAN: Kirim ID Guru pencipta tugas
       })
     })
     .then(res => res.json())
