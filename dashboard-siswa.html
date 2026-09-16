@@ -157,7 +157,10 @@
     if (session && session.role === 'siswa') {
       document.getElementById('namaSiswa').innerText = "Halo, " + session.nama + "!";
       document.getElementById('infoKelas').innerText = "Anda login sebagai siswa Kelas " + session.kelas + ". Berikut adalah tugas dan ujian Anda.";
+      
+      // PERBAIKAN 1: Panggil kedua fungsi ini agar berjalan bersamaan saat web dimuat
       loadTugas();
+      loadJadwalUjian(); 
     } else {
       alert("Akses ditolak! Silakan login sebagai siswa.");
       window.location.href = "index.html";
@@ -171,7 +174,7 @@
       method: 'POST',
       body: JSON.stringify({ 
         action: 'getTugas',
-        kelas: session.kelas // <-- Mengirim parameter kelas untuk filter
+        kelas: session.kelas 
       })
     })
     .then(res => res.json())
@@ -185,7 +188,6 @@
             ? `<a href="${item.linkMateri}" target="_blank" class="btn btn-sm btn-primary fw-bold px-3">🔗 Buka Materi / Link</a>` 
             : `<span class="text-muted fst-italic" style="font-size: 0.85rem;">Tidak ada lampiran</span>`;
 
-          // Format deadline (opsional, memotong huruf "T" jika pakai input datetime-local)
           const deadlineText = item.deadline ? item.deadline.replace('T', ' ') : '-';
 
           container.innerHTML += `
@@ -212,13 +214,6 @@
     });
   }
 
-  function logout() {
-    localStorage.removeItem('userSession');
-    window.location.href = 'index.html';
-  }
-  // Panggil fungsi ini di dalam event listener DOMContentLoaded bersama loadTugas()
-  // document.addEventListener("DOMContentLoaded", function() { ... loadJadwalUjian(); ... });
-
   function loadJadwalUjian() {
     const container = document.getElementById('containerUjian');
 
@@ -226,45 +221,59 @@
       method: 'POST',
       body: JSON.stringify({ 
         action: 'getJadwalUjian',
-        kelas: session.kelas 
+        kelas: session.kelas,
+        role: session.role
       })
     })
     .then(res => res.json())
     .then(data => {
-      if (data.status === 'success' && data.ujian) {
-        const waktuSekarang = new Date().getTime();
-        const waktuMulai = new Date(data.ujian.waktuMulai).getTime();
-        const waktuSelesai = new Date(data.ujian.waktuSelesai).getTime();
+      // PERBAIKAN 2 & 3: Menggunakan data.data (array) dan me-looping isinya
+      if (data.status === 'success' && data.data && data.data.length > 0) {
+        container.innerHTML = ''; // Kosongkan state "Memuat..."
+        
+        data.data.forEach(ujian => {
+          const waktuSekarang = new Date().getTime();
+          
+          // Mengembalikan format spasi menjadi 'T' agar bisa di-parsing oleh semua browser (Safari/Mobile)
+          const wMulaiT = ujian.waktuMulai.replace(' ', 'T');
+          const wSelesaiT = ujian.waktuSelesai.replace(' ', 'T');
+          
+          const waktuMulai = new Date(wMulaiT).getTime();
+          const waktuSelesai = new Date(wSelesaiT).getTime();
 
-        if (waktuSekarang < waktuMulai) {
-          // Ujian belum mulai
-          container.innerHTML = `
-            <div class="card-menu card-ujian-disabled">
-              <div class="card-icon">⏳</div>
-              <h5 class="fw-bold text-dark">${data.ujian.judul}</h5>
-              <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">Ujian dimulai pada:<br><b>${data.ujian.waktuMulai.replace('T', ' ')}</b></p>
-            </div>
-          `;
-        } else if (waktuSekarang >= waktuMulai && waktuSekarang <= waktuSelesai) {
-          // Ujian sedang berlangsung
-          container.innerHTML = `
-            <a href="ujian.html?id=${data.ujian.idUjian}" class="card-menu card-ujian-active">
-              <div class="card-icon">✍️</div>
-              <h4 class="fw-bold text-success">Masuk Ujian Sekarang</h4>
-              <p class="text-dark mt-2 mb-0">${data.ujian.judul}</p>
-              <p class="text-danger mt-1 mb-0" style="font-size: 0.8rem;">Batas waktu: ${data.ujian.waktuSelesai.replace('T', ' ')}</p>
-            </a>
-          `;
-        } else {
-          // Ujian sudah selesai/ditutup
-          container.innerHTML = `
-            <div class="card-menu card-ujian-disabled">
-              <div class="card-icon">🔒</div>
-              <h5 class="fw-bold">Ujian Selesai</h5>
-              <p class="text-muted mt-2 mb-0">Sesi ujian telah ditutup.</p>
-            </div>
-          `;
-        }
+          // Judul Ujian menggunakan field dari backend (judulUjian)
+          const judul = ujian.judulUjian || "Ujian";
+
+          if (waktuSekarang < waktuMulai) {
+            // Ujian belum mulai
+            container.innerHTML += `
+              <div class="card-menu card-ujian-disabled mb-3">
+                <div class="card-icon">⏳</div>
+                <h5 class="fw-bold text-dark">${judul}</h5>
+                <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem;">Ujian dimulai pada:<br><b>${ujian.waktuMulai}</b></p>
+              </div>
+            `;
+          } else if (waktuSekarang >= waktuMulai && waktuSekarang <= waktuSelesai) {
+            // Ujian sedang berlangsung
+            container.innerHTML += `
+              <a href="ujian.html?id=${ujian.idJadwal}" class="card-menu card-ujian-active mb-3">
+                <div class="card-icon">✍️</div>
+                <h4 class="fw-bold text-success">Masuk Ujian Sekarang</h4>
+                <p class="text-dark mt-2 mb-0">${judul}</p>
+                <p class="text-danger mt-1 mb-0" style="font-size: 0.8rem;">Batas waktu: ${ujian.waktuSelesai}</p>
+              </a>
+            `;
+          } else {
+            // Ujian sudah selesai/ditutup
+            container.innerHTML += `
+              <div class="card-menu card-ujian-disabled mb-3">
+                <div class="card-icon">🔒</div>
+                <h5 class="fw-bold">Ujian Selesai</h5>
+                <p class="text-muted mt-2 mb-0">${judul} telah ditutup.</p>
+              </div>
+            `;
+          }
+        });
       } else {
         container.innerHTML = `
           <div class="card-menu card-ujian-disabled" style="border: none; background: #fff;">
@@ -279,6 +288,11 @@
       console.error(err);
       container.innerHTML = '<div class="empty-state text-danger">Gagal memuat jadwal ujian.</div>';
     });
+  }
+
+  function logout() {
+    localStorage.removeItem('userSession');
+    window.location.href = 'index.html';
   }
 </script>
 </body>
