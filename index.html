@@ -865,21 +865,15 @@
 
           /* Redirect */
 
-          setTimeout(() => {
-
-            if (data.user.role === 'guru') {
-
-              window.location.href =
-                'dashboard-guru.html';
-
-            } else {
-
-              window.location.href =
-                'dashboard-siswa.html';
-
-            }
-
-          }, 500);
+      setTimeout(() => {
+        if (data.user.role === 'superadmin') {
+          window.location.href = 'dashboard-admin.html';
+        } else if (data.user.role === 'guru') {
+          window.location.href = 'dashboard-guru.html';
+        } else {
+          window.location.href = 'dashboard-siswa.html';
+        }
+      }, 500);
 
 
         } else {
