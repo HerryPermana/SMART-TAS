@@ -173,7 +173,43 @@
         </form>
       </div>
     </div>
+<!-- Tombol Duplikasi di atas Panel Kanan -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0 text-dark">📋 Soal Terdaftar</h4>
+  <button type="button" class="btn btn-sm btn-outline-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalDuplikasi">
+    📑 Duplikasi Soal
+  </button>
+</div>
 
+<!-- Modal Duplikasi Soal -->
+<div class="modal fade" id="modalDuplikasi" tabindex="-1" aria-labelledby="modalDuplikasiLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalDuplikasiLabel">Duplikasi Soal ke Kelas Lain</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Mapel / Kelas Sumber</label>
+          <select id="selectSumberMapel" class="form-select" required>
+            <option value="">-- Pilih Mapel Sumber --</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Mapel / Kelas Sasaran</label>
+          <select id="selectTargetMapel" class="form-select" required>
+            <option value="">-- Pilih Mapel Sasaran --</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-success btn-sm fw-bold" onclick="prosesDuplikasiSoal()">Proses Salin</button>
+      </div>
+    </div>
+  </div>
+</div>
     <!-- PANEL KANAN: DAFTAR SOAL -->
     <div class="col-lg-5">
       <div class="card card-custom p-4 p-md-5 h-100">
@@ -454,6 +490,58 @@
       alert("Terjadi kesalahan koneksi saat menghapus soal.");
     });
   }
+
+  // Tambahkan saat loadDaftarMapel berhasil dijalankan
+function isiDropdownDuplikasi(mapelData) {
+  const sumber = document.getElementById('selectSumberMapel');
+  const target = document.getElementById('selectTargetMapel');
+  sumber.innerHTML = '<option value="">-- Pilih Mapel Sumber --</option>';
+  target.innerHTML = '<option value="">-- Pilih Mapel Sasaran --</option>';
+
+  mapelData.forEach(m => {
+    const opt = `<option value="${m.idMapel}">${m.namaMapel} - Kelas ${m.kelas}</option>`;
+    sumber.innerHTML += opt;
+    target.innerHTML += opt;
+  });
+}
+
+function prosesDuplikasiSoal() {
+  const idSumber = document.getElementById('selectSumberMapel').value;
+  const idTarget = document.getElementById('selectTargetMapel').value;
+
+  if (!idSumber || !idTarget) {
+    alert("Harap pilih mapel sumber dan target!");
+    return;
+  }
+  if (idSumber === idTarget) {
+    alert("Mapel sumber dan target tidak boleh sama!");
+    return;
+  }
+
+  if (!confirm("Salin seluruh soal dari mapel sumber ke mapel tujuan?")) return;
+
+  fetch(CONFIG.GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'duplikasiSoal',
+      idSumber: idSumber,
+      idTarget: idTarget,
+      idGuru: session.id
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      alert("Soal berhasil diduplikasi!");
+      const modalEl = document.getElementById('modalDuplikasi');
+      bootstrap.Modal.getInstance(modalEl).hide();
+      loadDaftarSoal(idTarget);
+    } else {
+      alert("Gagal menduplikasi: " + data.message);
+    }
+  })
+  .catch(() => alert("Koneksi gagal saat menduplikasi soal."));
+}
 </script>
 </body>
 </html>
