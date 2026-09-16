@@ -235,11 +235,19 @@
           const waktuSekarang = new Date().getTime();
           
           // Mengembalikan format spasi menjadi 'T' agar bisa di-parsing oleh semua browser (Safari/Mobile)
-          const wMulaiT = ujian.waktuMulai.replace(' ', 'T');
-          const wSelesaiT = ujian.waktuSelesai.replace(' ', 'T');
-          
-          const waktuMulai = new Date(wMulaiT).getTime();
-          const waktuSelesai = new Date(wSelesaiT).getTime();
+// KODE PENGGANTI YANG LEBIH AMAN
+function parseSafeDate(dateStr) {
+  // Coba konversi langsung
+  let time = new Date(dateStr).getTime();
+  // Jika gagal (NaN), paksa penambahan 'T' untuk plain text
+  if (isNaN(time)) {
+    time = new Date(dateStr.replace(' ', 'T')).getTime();
+  }
+  return time;
+}
+
+const waktuMulai = parseSafeDate(ujian.waktuMulai);
+const waktuSelesai = parseSafeDate(ujian.waktuSelesai);
 
           // Judul Ujian menggunakan field dari backend (judulUjian)
           const judul = ujian.judulUjian || "Ujian";
