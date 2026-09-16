@@ -242,7 +242,7 @@
     renderFormOpsi();
   });
 
-  function loadDaftarMapel() {
+function loadDaftarMapel() {
     const select = document.getElementById('selectMapel');
     
     fetch(CONFIG.GAS_URL, {
@@ -250,7 +250,8 @@
       body: JSON.stringify({ 
         action: 'getMapel', 
         kelas: 'guru',
-        idUser: session ? session.id : ''
+        idUser: session ? session.id : '',
+        role: session ? session.role : 'guru' // Tambahan pengaman role
       })
     })
     .then(res => res.json())
@@ -260,6 +261,10 @@
         data.mapel.forEach(m => {
           select.innerHTML += `<option value="${m.idMapel}">${m.namaMapel} (${m.idMapel}) - Kelas ${m.kelas}</option>`;
         });
+        
+        // KOREKSI UTAMA: Panggil fungsi ini agar Dropdown di Modal Duplikasi terisi
+        isiDropdownDuplikasi(data.mapel); 
+        
       } else {
         select.innerHTML = '<option value="">Belum ada mapel tersedia</option>';
       }
