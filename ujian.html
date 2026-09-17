@@ -99,6 +99,7 @@
 
 <script>
   let jumlahPelanggaran = 0;
+  const BATAS_PELANGGARAN = 3; // Ubah batas maksimal pelanggaran di sini
   let mapelTerpilih = '';
   let listSoalLoaded = [];
   let isUjianAktif = false;
@@ -121,17 +122,17 @@
     window.location.href = session.role === 'guru' ? 'dashboard-guru.html' : 'dashboard-siswa.html';
   }
 
-function loadDaftarMapel() {
-  const select = document.getElementById('selectMapel');
-  fetch(CONFIG.GAS_URL, {
-    method: 'POST',
-    body: JSON.stringify({ 
-      action: 'getMapel',
-      kelas: session.kelas,
-      idUser: session.id,
-      role: session.role
+  function loadDaftarMapel() {
+    const select = document.getElementById('selectMapel');
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ 
+        action: 'getMapel',
+        kelas: session.kelas,
+        idUser: session.id,
+        role: session.role
+      })
     })
-  })
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success' && data.mapel && data.mapel.length > 0) {
@@ -156,30 +157,44 @@ function loadDaftarMapel() {
     
     jumlahPelanggaran++;
     document.getElementById('badgePelanggaran').innerText = `Pelanggaran: ${jumlahPelanggaran}x`;
-    alert(`PERINGATAN VIOLASI (${jumlahPelanggaran}x)!\n\n${alasan}\n\nSistem telah mencatat aktivitas ini.`);
     
+    // Peringatan pelanggaran
+    alert(`PERINGATAN PELANGGARAN (${jumlahPelanggaran}/${BATAS_PELANGGARAN})!\n\n${alasan}\n\nSistem mencatat aktivitas ini.`);
+    
+    // Auto-Submit & Logout Paksa jika melebihi batas
+    if (jumlahPelanggaran >= BATAS_PELANGGARAN) {
+        alert("Batas pelanggaran tercapai! Ujian Anda dihentikan paksa dan akan dikirim secara otomatis.");
+        submitJawaban(true); // Kirim parameter true menandakan submit paksa
+    }
+
     setTimeout(() => { isBlurTriggered = false; }, 1000);
   }
 
-  // Deteksi Pindah Tab & Aplikasi
+  // Deteksi Pindah Tab (Membuka tab lain di browser)
   document.addEventListener("visibilitychange", function() {
     if (document.hidden && isUjianAktif) {
-      catatPelanggaran("Terdeteksi berpindah tab atau meninggalkan halaman ujian!");
+      catatPelanggaran("Terdeteksi membuka tab baru atau menyembunyikan halaman ujian!");
     }
   });
 
+  // Deteksi Jendela Kehilangan Fokus (Membuka notifikasi WA, split screen, dll)
   window.addEventListener("blur", function() {
     if (isUjianAktif) {
-      catatPelanggaran("Terdeteksi berpindah ke aplikasi lain atau membagi layar!");
+      catatPelanggaran("Terdeteksi berpindah ke aplikasi lain atau layar tidak fokus!");
     }
   });
 
-  // Deteksi Keluar Fullscreen
-  document.addEventListener("fullscreenchange", function() {
-    if (!document.fullscreenElement && isUjianAktif) {
-      catatPelanggaran("Anda telah keluar dari mode Layar Penuh (Fullscreen)!");
+  // Deteksi Keluar Fullscreen (Menekan ESC)
+  document.addEventListener("fullscreenchange", checkFullscreen);
+  document.addEventListener("webkitfullscreenchange", checkFullscreen);
+  document.addEventListener("msfullscreenchange", checkFullscreen);
+
+  function checkFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement && isUjianAktif) {
+      catatPelanggaran("Anda keluar dari mode Layar Penuh! Kembalikan ke layar penuh untuk melanjutkan.");
+      // Opsi tambahan: Paksa masuk fullscreen lagi (namun sebagian browser memblokir ini jika tanpa interaksi klik)
     }
-  });
+  }
 
   // Blokir Fitur Copy, Paste, & Klik Kanan
   document.addEventListener("contextmenu", e => { if (isUjianAktif) e.preventDefault(); });
@@ -192,11 +207,12 @@ function loadDaftarMapel() {
 
     if (
       e.key === "F12" || 
-      (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'a' || e.key === 'p')) ||
+      e.key === "Escape" ||
+      (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'a' || e.key === 'p' || e.key === 's')) ||
       (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))
     ) {
       e.preventDefault();
-      catatPelanggaran("Penggunaan tombol kombinasi terlarang terdeteksi!");
+      catatPelanggaran("Penggunaan tombol/kombinasi keyboard terlarang terdeteksi!");
     }
   });
 
@@ -210,10 +226,14 @@ function loadDaftarMapel() {
       return;
     }
 
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {
-        console.warn("Fullscreen diblokir oleh browser.");
-      });
+    // Dukungan Fullscreen Lintas Browser
+    let elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(err => console.warn(err));
+    } else if (elem.webkitRequestFullscreen) { /* Safari */
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE11 */
+      elem.msRequestFullscreen();
     }
 
     isUjianAktif = true;
@@ -278,7 +298,7 @@ function loadDaftarMapel() {
           }
           else if (tipe === 'PGK_KATEGORI') {
             htmlKonten += `
-              <div class="text-primary small fw-bold mb-2"><i>* Tentukan respon Benar/Salah untuk setiap pernyataan di bawah</i></div>
+              <div class="text-primary small fw-bold mb-2"><i>* Tentukan respon Benar/Salah untuk setiap pernyataan</i></div>
               <div class="table-responsive">
                 <table class="table table-bordered table-kategori align-middle mt-2 mb-0">
                   <thead class="table-secondary text-center">
@@ -326,12 +346,16 @@ function loadDaftarMapel() {
   }
 
   // --- SUBMIT JAWABAN & AUTO LOGOUT ---
-  function submitJawaban() {
-    if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) return;
+  function submitJawaban(isForceSubmit = false) {
+    if (!isForceSubmit) {
+      if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) return;
+    }
 
     const btnSubmit = document.getElementById('btnSubmit');
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim Jawaban...';
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Mengirim Jawaban...';
+    }
 
     const listJawaban = [];
 
@@ -370,29 +394,39 @@ function loadDaftarMapel() {
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        isUjianAktif = false; // Matikan deteksi pelanggaran
+        isUjianAktif = false; 
         
+        // Keluar dari Fullscreen jika browser mengizinkan
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
         }
 
-        // Tampilkan Nilai
-        alert(`UJIAN SELESAI!\n\nNilai Akhir Anda: ${data.nilai}\nJumlah Pelanggaran: ${jumlahPelanggaran}x\n\nSesi Anda telah berakhir. Sistem akan otomatis melakukan logout.`);
+        alert(`UJIAN SELESAI!\n\nNilai Akhir Anda: ${data.nilai}\nJumlah Pelanggaran: ${jumlahPelanggaran}x\n\nSesi berakhir. Anda akan dialihkan keluar.`);
 
-        // Hapus Sesi & Logout Otomatis
+        // --- PROSES LOGOUT OTOMATIS ---
         localStorage.removeItem('userSession');
         sessionStorage.clear();
-        window.location.href = "index.html";
+        
+        // Memastikan tidak ada cache yang menyimpan sesi mundur (back button)
+        window.location.replace("index.html"); 
       } else {
         alert('Gagal mengirim jawaban: ' + data.message);
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
+        }
       }
     })
     .catch(() => {
-      alert('Terjadi kesalahan koneksi saat mengirim jawaban.');
-      btnSubmit.disabled = false;
-      btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
+      alert('Terjadi kesalahan koneksi saat mengirim jawaban. Sistem akan mencoba kembali.');
+      if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
+      }
     });
   }
 </script>
