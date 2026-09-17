@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rekap Nilai Siswa - Portal Akademik</title>
-  <!-- Menggunakan Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    /* Menggunakan font Nunito agar senada dengan Dashboard */
     @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
     
     body { 
@@ -15,13 +13,11 @@
       font-family: 'Nunito', sans-serif; 
     }
     
-    /* Navbar Gradient Senada dengan Dashboard */
     .navbar-custom { 
       background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
-    /* Style Custom untuk Card */
     .card-custom { 
       background: #ffffff;
       border-radius: 20px; 
@@ -29,14 +25,13 @@
       border: 1px solid #edf2f9; 
     }
 
-    /* Style untuk Tabel */
     .table-wrapper {
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid #eaeaea;
     }
     .table-hover tbody tr:hover { 
-      background-color: #f1f9ff; /* Efek hover biru sangat muda */
+      background-color: #f1f9ff; 
       transition: background-color 0.3s ease;
     }
     .th-gradient { 
@@ -45,7 +40,6 @@
       border-bottom: none;
     }
 
-    /* Style Tombol Refresh Custom */
     .btn-refresh {
       background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
       border: none;
@@ -58,7 +52,6 @@
       color: white;
     }
 
-    /* Custom Badge untuk Nilai */
     .badge-nilai {
       padding: 8px 0;
       border-radius: 10px;
@@ -69,7 +62,6 @@
 </head>
 <body>
 
-<!-- NAVBAR UTAMA -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4 py-3">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4" href="dashboard-guru.html">
@@ -85,7 +77,6 @@
 </nav>
 
 <div class="container py-5">
-  <!-- HEADER SECTION -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h3 class="fw-bold text-dark mb-1">📊 Rekap Nilai Siswa</h3>
@@ -96,40 +87,23 @@
     </a>
   </div>
 
-  <!-- PANEL FILTER -->
   <div class="card card-custom p-4 mb-4">
     <div class="row g-3 align-items-end">
       <div class="col-md-5">
         <label class="form-label fw-bold text-secondary small">🏫 Filter Kelas</label>
         <select id="filterKelas" class="form-select border-primary-subtle shadow-sm" onchange="renderTable()">
           <option value="SEMUA">Semua Kelas</option>
-          
           <optgroup label="Kelas 7">
-            <option value="7A">7A</option>
-            <option value="7B">7B</option>
-            <option value="7C">7C</option>
-            <option value="7D">7D</option>
-            <option value="7E">7E</option>
-            <option value="7F">7F</option>
+            <option value="7A">7A</option><option value="7B">7B</option><option value="7C">7C</option>
+            <option value="7D">7D</option><option value="7E">7E</option><option value="7F">7F</option>
           </optgroup>
-          
           <optgroup label="Kelas 8">
-            <option value="8A">8A</option>
-            <option value="8B">8B</option>
-            <option value="8C">8C</option>
-            <option value="8D">8D</option>
-            <option value="8E">8E</option>
-            <option value="8F">8F</option>
-            <option value="8G">8G</option>
+            <option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option>
+            <option value="8D">8D</option><option value="8E">8E</option><option value="8F">8F</option><option value="8G">8G</option>
           </optgroup>
-          
           <optgroup label="Kelas 9">
-            <option value="9A">9A</option>
-            <option value="9B">9B</option>
-            <option value="9C">9C</option>
-            <option value="9D">9D</option>
-            <option value="9E">9E</option>
-            <option value="9F">9F</option>
+            <option value="9A">9A</option><option value="9B">9B</option><option value="9C">9C</option>
+            <option value="9D">9D</option><option value="9E">9E</option><option value="9F">9F</option>
           </optgroup>
         </select>
       </div>
@@ -149,7 +123,6 @@
     </div>
   </div>
 
-  <!-- TABEL DATA -->
   <div class="card card-custom p-4">
     <div class="table-wrapper">
       <table class="table table-hover align-middle mb-0">
@@ -176,13 +149,11 @@
   </div>
 </div>
 
-<!-- Mengambil base URL GAS dari file config.js -->
 <script src="js/config.js"></script>
 
 <script>
   let dataRekapGlobal = [];
   
-  // Cek Sesi
   const session = JSON.parse(localStorage.getItem('userSession'));
   if (!session || session.role !== 'guru') {
     alert("Akses ditolak! Halaman ini khusus Guru.");
@@ -194,43 +165,73 @@
     loadDataRekap();
   });
 
-  // Fetch Data dari Apps Script
   function loadDataRekap() {
     const tbody = document.getElementById('bodyTableRekap');
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center py-5 text-muted">
           <div class="spinner-border text-primary mb-2" role="status"></div>
-          <p class="mb-0 fw-semibold">Mengambil data...</p>
+          <p class="mb-0 fw-semibold">Mengambil data nilai & mapel...</p>
         </td>
       </tr>`;
 
+    // 1. Ambil daftar mapel yang HANYA diajar oleh guru ini
     fetch(CONFIG.GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ 
-        action: 'getRekapNilai',
-        idUser: session.id  // Mengirim ID Guru untuk filter backend
-      })
+      body: JSON.stringify({ action: 'getMapel', idUser: session.id, role: session.role })
     })
     .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        dataRekapGlobal = data.data;
-        populateFilterMapel(data.data);
-        renderTable();
-      } else {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">${data.message}</td></tr>`;
-      }
+    .then(mapelRes => {
+      if(mapelRes.status !== 'success') throw new Error("Gagal memuat mapel");
+      
+      // Buat kamus mapel (Map) untuk mengubah ID Mapel menjadi Nama Mapel
+      const mapelDict = {};
+      mapelRes.mapel.forEach(m => {
+        mapelDict[m.idMapel] = m.namaMapel + " (" + m.kelas + ")";
+      });
+
+      // 2. Ambil seluruh data rekap nilai
+      return fetch(CONFIG.GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRekapNilai', idUser: session.id, role: session.role })
+      })
+      .then(res => res.json())
+      .then(rekapRes => {
+        if (rekapRes.status === 'success') {
+          // Filter rekap: HANYA tampilkan nilai yang ID Mapel-nya cocok dengan mapel guru ini
+          let filteredData = [];
+          
+          rekapRes.data.forEach(d => {
+             // d.namaMapel dari backend sebenarnya berisi ID Mapel (cth: MPL-001)
+             if (mapelDict[d.namaMapel]) {
+               filteredData.push({
+                 namaSiswa: d.namaSiswa,
+                 kelas: d.kelas,
+                 // Ubah ID Mapel menjadi nama aslinya
+                 namaMapelAsli: mapelDict[d.namaMapel],
+                 nilai: d.nilai,
+                 tanggal: d.tanggal
+               });
+             }
+          });
+
+          dataRekapGlobal = filteredData;
+          populateFilterMapel(filteredData);
+          renderTable();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">${rekapRes.message}</td></tr>`;
+        }
+      });
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error(err);
       tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger fw-bold">Gagal terhubung ke server. Silakan cek koneksi internet.</td></tr>`;
     });
   }
 
-  // Mengisi opsi Mapel secara dinamis sesuai data yang diterima
   function populateFilterMapel(data) {
     const select = document.getElementById('filterMapel');
-    const mapelUnik = [...new Set(data.map(item => item.namaMapel))];
+    const mapelUnik = [...new Set(data.map(item => item.namaMapelAsli))];
     
     let html = '<option value="SEMUA">Semua Mata Pelajaran</option>';
     mapelUnik.forEach(m => {
@@ -239,7 +240,6 @@
     select.innerHTML = html;
   }
 
-  // Render Tabel dengan Filter
   function renderTable() {
     const filterKelas = document.getElementById('filterKelas').value;
     const filterMapel = document.getElementById('filterMapel').value;
@@ -247,12 +247,12 @@
     
     let filteredData = dataRekapGlobal.filter(item => {
       const matchKelas = filterKelas === 'SEMUA' || String(item.kelas) === String(filterKelas);
-      const matchMapel = filterMapel === 'SEMUA' || item.namaMapel === filterMapel;
+      const matchMapel = filterMapel === 'SEMUA' || item.namaMapelAsli === filterMapel;
       return matchKelas && matchMapel;
     });
 
     if (filteredData.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted fw-semibold">📂 Tidak ada data yang sesuai dengan filter saat ini.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted fw-semibold">📂 Tidak ada data yang sesuai dengan filter saat ini atau belum ada murid yang mengerjakan.</td></tr>`;
       return;
     }
 
@@ -264,7 +264,7 @@
           <td class="text-center fw-bold text-secondary">${index + 1}</td>
           <td class="fw-bold text-dark">${d.namaSiswa}</td>
           <td class="text-center fw-semibold text-primary">${d.kelas}</td>
-          <td class="text-secondary fw-semibold">${d.namaMapel}</td>
+          <td class="text-secondary fw-semibold">${d.namaMapelAsli}</td>
           <td class="text-center">
             <div class="badge ${badgeColor} badge-nilai w-100">${d.nilai}</div>
           </td>
@@ -275,7 +275,6 @@
     tbody.innerHTML = html;
   }
 
-  // Fungsi Logout
   function logout() {
     if (confirm("Yakin ingin keluar?")) {
       localStorage.removeItem('userSession');
