@@ -99,7 +99,7 @@
 
 <script>
   let jumlahPelanggaran = 0;
-  const BATAS_PELANGGARAN = 3; // Ubah batas maksimal pelanggaran di sini
+  const BATAS_PELANGGARAN = 3; // Batas maksimal pelanggaran
   let mapelTerpilih = '';
   let listSoalLoaded = [];
   let isUjianAktif = false;
@@ -192,7 +192,6 @@
   function checkFullscreen() {
     if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement && isUjianAktif) {
       catatPelanggaran("Anda keluar dari mode Layar Penuh! Kembalikan ke layar penuh untuk melanjutkan.");
-      // Opsi tambahan: Paksa masuk fullscreen lagi (namun sebagian browser memblokir ini jika tanpa interaksi klik)
     }
   }
 
@@ -347,8 +346,16 @@
 
   // --- SUBMIT JAWABAN & AUTO LOGOUT ---
   function submitJawaban(isForceSubmit = false) {
+    
+    // 1. Matikan deteksi pelanggaran SEMENTARA (Mencegah bug alert 1x pelanggaran saat dialog pop-up muncul)
+    isUjianAktif = false; 
+
     if (!isForceSubmit) {
-      if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) return;
+      if (!confirm("Pastikan semua soal sudah dijawab.\nApakah Anda yakin ingin menyelesaikan ujian ini?")) {
+         // 2. Jika siswa batal submit (klik cancel), nyalakan kembali deteksi pelanggaran
+         isUjianAktif = true;
+         return;
+      }
     }
 
     const btnSubmit = document.getElementById('btnSubmit');
@@ -394,9 +401,8 @@
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
-        isUjianAktif = false; 
         
-        // Keluar dari Fullscreen jika browser mengizinkan
+        // Keluar dari Fullscreen otomatis
         if (document.exitFullscreen) {
           document.exitFullscreen().catch(() => {});
         } else if (document.webkitExitFullscreen) {
@@ -411,10 +417,12 @@
         localStorage.removeItem('userSession');
         sessionStorage.clear();
         
-        // Memastikan tidak ada cache yang menyimpan sesi mundur (back button)
+        // Redirect yang mencegah tombol 'back' kembali ke ruang ujian
         window.location.replace("index.html"); 
       } else {
         alert('Gagal mengirim jawaban: ' + data.message);
+        // Nyalakan lagi deteksi karena ujian gagal dikirim
+        isUjianAktif = true; 
         if (btnSubmit) {
             btnSubmit.disabled = false;
             btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
@@ -423,6 +431,8 @@
     })
     .catch(() => {
       alert('Terjadi kesalahan koneksi saat mengirim jawaban. Sistem akan mencoba kembali.');
+      // Nyalakan lagi deteksi karena ujian gagal dikirim
+      isUjianAktif = true; 
       if (btnSubmit) {
           btnSubmit.disabled = false;
           btnSubmit.innerText = '📤 Selesai & Kirim Jawaban';
